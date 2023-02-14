@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken")
 const asyncHandler = require("express-async-handler")
-const User = require("../models/userModel")
+const db = require("../config/db")
 
 const protect = asyncHandler(async (req, res, next) => {
   let token
@@ -15,7 +15,11 @@ const protect = asyncHandler(async (req, res, next) => {
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET)
       // Get user from token
-      req.user = await User.findById(decoded.id).select("-password")
+      const [userFetched] = await db.execute(
+        `SELECT id, name, email, profileImage, createdAt, updatedAt FROM users WHERE id = '${decoded.id}'`
+      )
+      // Save user in request
+      req.user = userFetched[0]
 
       next()
     } catch (error) {

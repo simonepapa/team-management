@@ -65,7 +65,7 @@ pool.execute(
   `CREATE TABLE IF NOT EXISTS users_teams (
     userId        INT NOT NULL,
     teamId        INT NOT NULL,
-    role          ENUM('Team leader', 'Co-leader', 'Collaborator'),
+    role          ENUM('Team leader', 'Co-leader', 'Collaborator') NOT NULL DEFAULT 'Collaborator',
     createdAt	    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ,
     updatedAt	    DATETIME on UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (userId, teamId),
@@ -78,7 +78,7 @@ pool.execute(
   `CREATE TABLE IF NOT EXISTS users_projects (
     userId        INT NOT NULL,
     projectId     INT NOT NULL,
-    role          ENUM('Project leader', 'Co-leader', 'Collaborator'),
+    role          ENUM('Project leader', 'Co-leader', 'Collaborator') NOT NULL DEFAULT 'Collaborator',
     createdAt	    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ,
     updatedAt	    DATETIME on UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (userId, projectId),

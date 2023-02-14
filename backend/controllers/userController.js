@@ -33,13 +33,12 @@ const registerUser = asyncHandler(async (req, res) => {
   const [user] = await db.execute(
     `INSERT INTO users(name, email, password) VALUES('${name}', '${email}', '${hashedPassword}')`
   )
-  console.log(user)
 
   res.status(201).json({
     id: user.insertId,
     name: name,
     email: email,
-    token: generateToken(user.id),
+    token: generateToken(user.insertId),
   })
 })
 
@@ -65,7 +64,7 @@ const loginUser = asyncHandler(async (req, res) => {
       id: user[0].id,
       name: user[0].name,
       email: user[0].email,
-      token: generateToken(user.id),
+      token: generateToken(user[0].id),
     })
   } else {
     res.status(401)
