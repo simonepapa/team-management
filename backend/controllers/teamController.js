@@ -97,6 +97,29 @@ const deleteTeam = asyncHandler(async (req, res) => {
   res.status(200).json("Team deleted successfully")
 })
 
+// @desc    Update team
+// @route   PUT /api/teams/:id
+// @access  Private
+const updateTeam = asyncHandler(async (req, res) => {
+  const { name } = req.body
+
+  // Check if the user making the request is either the team leader or the co-leader
+  const [isLeader] = await db.execute(
+    `SELECT userId, role FROM users_teams WHERE userId = ${req.user.id} AND teamId = ${req.params.id} AND role = 'Team leader'`
+  )
+
+  if (isLeader.length === 0) {
+    res.status(401)
+    throw new Error("Only the team leader can update the team.")
+  }
+
+  const updatedTeam = await db.execute(
+    `UPDATE teams SET name = '${name}' WHERE id = ${req.params.id}`
+  )
+
+  res.status(200).json(updatedTeam)
+})
+
 // @desc    Add new member to team
 // @route   POST /api/teams/:id/members
 // @access  Private
@@ -129,7 +152,7 @@ const removeMember = asyncHandler(async (req, res) => {
 
   if (isLeader.length === 0) {
     res.status(401)
-    throw new Error("Only the team leader can delete the team.")
+    throw new Error("Only the team leader can remove a member.")
   }
 
   // Get ID of the user to remove and check if it's the same as the team leader's ID
@@ -206,6 +229,7 @@ module.exports = {
   getTeams,
   getTeam,
   deleteTeam,
+  updateTeam,
   addMember,
   removeMember,
   updateMember,
