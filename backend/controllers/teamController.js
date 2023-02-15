@@ -116,10 +116,46 @@ const addMember = asyncHandler(async (req, res) => {
   res.status(201).json(userTeam)
 })
 
+// @desc    Remove member from team
+// @route   DELETE /api/teams/:id/members
+// @access  Private
+const removeMember = asyncHandler(async (req, res) => {
+  const { email } = req.body
+
+  // Check if the user making the request is the team leader
+  const [teamLeader] = await db.execute(
+    `SELECT userId, role FROM users_teams WHERE userId = ${req.user.id} AND teamId = ${req.params.id} AND role = 'Team leader'`
+  )
+
+  if (teamLeader.length === 0) {
+    res.status(401)
+    throw new Error("Only the team leader can delete the team.")
+  }
+
+  // Get ID of the user to remove and check if it's the same as the team leader's ID
+  const [user] = await db.execute(
+    `SELECT id FROM users
+    WHERE email = '${email}'`
+  )
+
+  if (teamLeader[0].userId === user[0].id) {
+    res.status(401)
+    throw new Error("Can't remove the team leader.")
+  }
+  
+  // Remove record from users_teams
+  const [removedMember] = await db.execute(
+    `DELETE FROM users_teams WHERE userId = ${user[0].id} AND teamId = ${req.params.id}`
+  )
+
+  res.status(201).json(removedMember)
+})
+
 module.exports = {
   createTeam,
   getTeams,
   getTeam,
   deleteTeam,
   addMember,
+  removeMember,
 }
