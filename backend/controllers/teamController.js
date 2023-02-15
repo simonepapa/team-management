@@ -80,11 +80,11 @@ const getTeam = asyncHandler(async (req, res) => {
 // @access  Private
 const deleteTeam = asyncHandler(async (req, res) => {
   // Check if the user making the request is the team leader
-  const [teamLeader] = await db.execute(
+  const [isLeader] = await db.execute(
     `SELECT role FROM users_teams WHERE userId = ${req.user.id} AND teamId = ${req.params.id} AND role = 'Team leader'`
   )
 
-  if (teamLeader.length === 0) {
+  if (isLeader.length === 0) {
     res.status(401)
     throw new Error("Only the team leader can delete the team.")
   }
@@ -123,11 +123,11 @@ const removeMember = asyncHandler(async (req, res) => {
   const { email } = req.body
 
   // Check if the user making the request is the team leader
-  const [teamLeader] = await db.execute(
+  const [isLeader] = await db.execute(
     `SELECT userId, role FROM users_teams WHERE userId = ${req.user.id} AND teamId = ${req.params.id} AND role = 'Team leader'`
   )
 
-  if (teamLeader.length === 0) {
+  if (isLeader.length === 0) {
     res.status(401)
     throw new Error("Only the team leader can delete the team.")
   }
@@ -138,17 +138,67 @@ const removeMember = asyncHandler(async (req, res) => {
     WHERE email = '${email}'`
   )
 
-  if (teamLeader[0].userId === user[0].id) {
+  if (isLeader[0].userId === user[0].id) {
     res.status(401)
     throw new Error("Can't remove the team leader.")
   }
-  
+
   // Remove record from users_teams
   const [removedMember] = await db.execute(
     `DELETE FROM users_teams WHERE userId = ${user[0].id} AND teamId = ${req.params.id}`
   )
 
   res.status(201).json(removedMember)
+})
+
+// @desc    Update member role
+// @route   PUT /api/teams/:id/members
+// @access  Private
+const updateMember = asyncHandler(async (req, res) => {
+  const { email, role } = req.body
+
+  // Check if the user making the request is either the team leader or the co-leader
+  const [isLeader] = await db.execute(
+    `SELECT userId, role FROM users_teams WHERE userId = ${req.user.id} AND teamId = ${req.params.id} AND (role = 'Team leader' OR role = 'Co-leader')`
+  )
+
+  if (isLeader.length === 0) {
+    res.status(401)
+    throw new Error(
+      "Only the team leader and the co-leader can change the role of a member."
+    )
+  }
+
+  // Get ID of the user to update and check if it's the same as the team leader's ID
+  const [user] = await db.execute(
+    `SELECT id FROM users
+    WHERE email = '${email}'`
+  )
+
+  // Update member role
+  if (role === "Team leader") {
+    // If the role we want to set is "Team leader" AND the role of the user making the request is different from "Team leader", then throw an error
+    if (isLeader[0].role !== "Team leader") {
+      res.status(401)
+      throw new Error("Only the team leader can set the new team leader.")
+    } else {
+      // First we set the current team leader's role to "Co-leader"
+      await db.execute(
+        `UPDATE users_teams SET role = 'Co-leader' WHERE role = 'Team leader' AND teamId = ${req.params.id}`
+      )
+      // Then we set the user whose role we want to change to "Team leader"
+      await db.execute(
+        `UPDATE users_teams SET role = 'Team leader' WHERE userId = ${user[0].id} AND teamId = ${req.params.id}`
+      )
+    }
+  } else {
+    // If the role we want to set is different from team leader, we change it ONLY IF the role of the member is not team leader, as changing it would leave the team without a leader
+    await db.execute(
+      `UPDATE users_teams SET role = '${role}' WHERE userId = ${user[0].id} AND teamId = ${req.params.id} AND (role != 'Team leader')`
+    )
+  }
+
+  res.status(201).json("Role updated")
 })
 
 module.exports = {
@@ -158,4 +208,5 @@ module.exports = {
   deleteTeam,
   addMember,
   removeMember,
+  updateMember,
 }
