@@ -42,7 +42,7 @@ const getTeams = asyncHandler(async (req, res) => {
   res.status(200).json(teams)
 })
 
-// @desc    Get user team
+// @desc    Get user team by ID
 // @route   GET /api/teams/:id
 // @access  Private
 const getTeam = asyncHandler(async (req, res) => {
