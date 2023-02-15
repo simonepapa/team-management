@@ -8,14 +8,14 @@ const {
   addMember,
   //updateMember,
   //removeMember,
-  deleteTeam,
+  //deleteTeam,
   //updateTeam,
 } = require("../controllers/teamController.js")
 
 const { protect } = require("../middleware/authMiddleware")
 
 router.route("/").post(protect, createTeam).get(protect, getTeams)
-router.route("/:id").get(protect, getTeam).delete(protect, deleteTeam)
+router.route("/:id").get(protect, getTeam)
 router.route("/:id/members").post(protect, addMember)
 
 module.exports = router
