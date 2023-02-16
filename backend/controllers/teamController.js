@@ -207,7 +207,7 @@ const updateMember = asyncHandler(async (req, res) => {
   if (isLeader.length === 0) {
     res.status(401)
     throw new Error(
-      "Only the team leader and the co-leader can change the role of a member."
+      "Only the team leader and the co-leaders can change the role of a member."
     )
   }
 

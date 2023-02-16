@@ -222,6 +222,56 @@ const removeMember = asyncHandler(async (req, res) => {
   res.status(201).json(removedMember)
 })
 
+// @desc    Update member role
+// @route   PUT /api/teams/:id/members
+// @access  Private
+const updateMember = asyncHandler(async (req, res) => {
+  const { email, role } = req.body
+
+  // Check if the user making the request is either the project leader or the co-leader
+  const [isLeader] = await db.execute(
+    `SELECT userId, role FROM users_projects WHERE userId = ${req.user.id} AND projectId = ${req.params.id} AND (role = 'Project leader' OR role = 'Co-leader')`
+  )
+
+  if (isLeader.length === 0) {
+    res.status(401)
+    throw new Error(
+      "Only the project leader and the co-leaders can change the role of a member."
+    )
+  }
+
+  // Get ID of the user to update and check if it's the same as the project leader's ID
+  const [user] = await db.execute(
+    `SELECT id FROM users
+    WHERE email = '${email}'`
+  )
+
+  // Update member role
+  if (role === "Project leader") {
+    // If the role we want to set is "Project leader" AND the role of the user making the request is different from "Project leader", then throw an error
+    if (isLeader[0].role !== "Project leader") {
+      res.status(401)
+      throw new Error("Only the project leader can set the new project leader.")
+    } else {
+      // First we set the current project leader's role to "Co-leader"
+      await db.execute(
+        `UPDATE users_projects SET role = 'Co-leader' WHERE role = 'Project leader' AND projectId = ${req.params.id}`
+      )
+      // Then we set the user whose role we want to change to "Project leader"
+      await db.execute(
+        `UPDATE users_projects SET role = 'Project leader' WHERE userId = ${user[0].id} AND projectId = ${req.params.id}`
+      )
+    }
+  } else {
+    // If the role we want to set is different from project leader, we change it ONLY IF the role of the member is not project leader, as changing it would leave the project without a leader
+    await db.execute(
+      `UPDATE users_projects SET role = '${role}' WHERE userId = ${user[0].id} AND projectId = ${req.params.id} AND (role != 'Project leader')`
+    )
+  }
+
+  res.status(201).json("Role updated")
+})
+
 module.exports = {
   createProject,
   getProjects,
@@ -230,4 +280,5 @@ module.exports = {
   updateProject,
   addMember,
   removeMember,
+  updateMember
 }
