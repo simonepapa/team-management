@@ -68,11 +68,23 @@ const getTeam = asyncHandler(async (req, res) => {
     `SELECT DISTINCT u.name, ut.role
       FROM users_teams ut
     INNER JOIN users u
-      ON u.id = ut.userId`
+      ON u.id = ut.userId
+    WHERE ut.teamId = ${req.params.id}`
   )
 
-  // Return an object that contains both the team info and the users list
-  res.status(200).json({ team: team[0], users })
+  // Get all team's projects name, description, status and dueDate
+  const [projects] = await db.execute(
+    `SELECT DISTINCT p.name, p.description, p.status, p.dueDate
+      FROM projects p
+    INNER JOIN teams_projects tp
+      ON p.id = tp.projectId
+    INNER JOIN teams t
+      ON t.id = tp.teamId
+    WHERE t.id = ${req.params.id}`
+  )
+
+  // Return an object that contains both the team info, the users list and the projects list
+  res.status(200).json({ team: team[0], users, projects })
 })
 
 // @desc    Delete team
