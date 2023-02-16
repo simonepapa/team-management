@@ -135,6 +135,16 @@ const updateTeam = asyncHandler(async (req, res) => {
 const addMember = asyncHandler(async (req, res) => {
   const { email } = req.body
 
+  // Check if the user making the request is either the team leader or a co-leader
+  const [isLeader] = await db.execute(
+    `SELECT userId, role FROM users_teams WHERE userId = ${req.user.id} AND teamId = ${req.params.id} AND (role = 'Team leader' OR role = 'Co-leader')`
+  )
+
+  if (isLeader.length === 0) {
+    res.status(401)
+    throw new Error("Only the team leader and the co-leaders can add a member.")
+  }
+
   const [user] = await db.execute(
     `SELECT id FROM users
     WHERE email = '${email}'`

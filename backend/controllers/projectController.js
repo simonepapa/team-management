@@ -158,10 +158,76 @@ const updateProject = asyncHandler(async (req, res) => {
   }
 })
 
+// @desc    Add new member to project
+// @route   POST /api/projects/:id/members
+// @access  Private
+const addMember = asyncHandler(async (req, res) => {
+  const { email } = req.body
+
+  // Check if the user making the request is the team leader
+  const [isLeader] = await db.execute(
+    `SELECT userId, role FROM users_projects WHERE userId = ${req.user.id} AND projectId = ${req.params.id} AND (role = 'Project leader' OR role = 'Co-leader')`
+  )
+
+  if (isLeader.length === 0) {
+    res.status(401)
+    throw new Error("Only the project leader and the co-leaders can add a member.")
+  }
+
+  const [user] = await db.execute(
+    `SELECT id FROM users
+    WHERE email = '${email}'`
+  )
+
+  // Create record in users_projects
+  const [userProject] = await db.execute(
+    `INSERT INTO users_projects(userId, projectId, role) VALUES(${user[0].id}, ${req.params.id}, 'Collaborator')`
+  )
+
+  res.status(201).json(userProject)
+})
+
+// @desc    Remove member from project
+// @route   DELETE /api/projects/:id/members
+// @access  Private
+const removeMember = asyncHandler(async (req, res) => {
+  const { email } = req.body
+
+  // Check if the user making the request is the team leader
+  const [isLeader] = await db.execute(
+    `SELECT userId, role FROM users_projects WHERE userId = ${req.user.id} AND projectId = ${req.params.id} AND role = 'Project leader'`
+  )
+
+  if (isLeader.length === 0) {
+    res.status(401)
+    throw new Error("Only the project leader can remove a member.")
+  }
+
+  // Get ID of the user to remove and check if it's the same as the team leader's ID
+  const [user] = await db.execute(
+    `SELECT id FROM users
+    WHERE email = '${email}'`
+  )
+
+  if (isLeader[0].userId === user[0].id) {
+    res.status(401)
+    throw new Error("Can't remove the project leader.")
+  }
+
+  // Remove record from users_projects
+  const [removedMember] = await db.execute(
+    `DELETE FROM users_projects WHERE userId = ${user[0].id} AND projectId = ${req.params.id}`
+  )
+
+  res.status(201).json(removedMember)
+})
+
 module.exports = {
   createProject,
   getProjects,
   getProject,
   deleteProject,
   updateProject,
+  addMember,
+  removeMember,
 }
