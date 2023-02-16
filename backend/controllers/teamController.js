@@ -86,13 +86,20 @@ const deleteTeam = asyncHandler(async (req, res) => {
 
   if (isLeader.length === 0) {
     res.status(401)
-    throw new Error("Only the team leader can delete the team.")
+    throw new Error("Only the team leader can delete it.")
   }
 
-  await db.execute(`DELETE FROM users_teams WHERE teamId = ${req.params.id};`)
-  await db.execute(`DELETE FROM teams WHERE id = ${req.params.id};`)
+  await db.execute(`DELETE tp, up, p
+                    FROM teams_projects tp 
+                    INNER JOIN projects p ON tp.projectId = p.id
+                    INNER JOIN users_projects up ON tp.projectId = up.projectId
+                    WHERE tp.teamId = ${req.params.id};
+                  `)
 
-  // TO DO - Remove all the records with teamId of req.params.id from teams_projects
+  await db.execute(
+    `DELETE FROM users_teams ut WHERE ut.teamId = ${req.params.id};`
+  )
+  await db.execute(`DELETE FROM teams t WHERE t.id = ${req.params.id};`)
 
   res.status(200).json("Team deleted successfully")
 })

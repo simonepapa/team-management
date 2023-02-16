@@ -90,8 +90,30 @@ const getProject = asyncHandler(async (req, res) => {
   res.status(200).json({ project: project[0], users })
 })
 
+// @desc    Delete project
+// @route   DELETE /api/projects/:id
+// @access  Private
+const deleteProject = asyncHandler(async (req, res) => {
+  // Check if the user making the request is the project leader
+  const [isLeader] = await db.execute(
+    `SELECT role FROM users_projects WHERE userId = ${req.user.id} AND projectId = ${req.params.id} AND role = 'Project leader'`
+  )
+
+  if (isLeader.length === 0) {
+    res.status(401)
+    throw new Error("Only the project leader can delete it.")
+  }
+
+  await db.execute(`DELETE FROM users_projects WHERE projectId = ${req.params.id};`)
+  await db.execute(`DELETE FROM teams_projects WHERE projectId = ${req.params.id};`)
+  await db.execute(`DELETE FROM projects WHERE id = ${req.params.id};`)
+
+  res.status(200).json("Project deleted successfully")
+})
+
 module.exports = {
   createProject,
   getProjects,
   getProject,
+  deleteProject,
 }
