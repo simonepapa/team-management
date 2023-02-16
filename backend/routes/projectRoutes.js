@@ -5,7 +5,7 @@ const {
   getProjects,
   getProject,
   deleteProject,
-  //updateProject,
+  updateProject,
   //getMembers,
   //addMember,
   //removeMember,
@@ -17,6 +17,6 @@ const {
 const { protect } = require("../middleware/authMiddleware")
 
 router.route("/").post(protect, createProject).get(protect, getProjects)
-router.route("/:id").get(protect, getProject).delete(protect, deleteProject)
+router.route("/:id").get(protect, getProject).delete(protect, deleteProject).put(protect, updateProject)
 
 module.exports = router

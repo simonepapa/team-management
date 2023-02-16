@@ -13,7 +13,9 @@ const createProject = asyncHandler(async (req, res) => {
   }
 
   // Check if the user making the request is the team leader
-  const [isLeader] = await db.execute(`SELECT role FROM users_teams WHERE userId = ${req.user.id} AND teamId = ${team} AND role = 'Team leader'`)
+  const [isLeader] = await db.execute(
+    `SELECT role FROM users_teams WHERE userId = ${req.user.id} AND teamId = ${team} AND role = 'Team leader'`
+  )
 
   if (isLeader.length === 0) {
     res.status(401)
@@ -104,11 +106,56 @@ const deleteProject = asyncHandler(async (req, res) => {
     throw new Error("Only the project leader can delete it.")
   }
 
-  await db.execute(`DELETE FROM users_projects WHERE projectId = ${req.params.id};`)
-  await db.execute(`DELETE FROM teams_projects WHERE projectId = ${req.params.id};`)
+  await db.execute(
+    `DELETE FROM users_projects WHERE projectId = ${req.params.id};`
+  )
+  await db.execute(
+    `DELETE FROM teams_projects WHERE projectId = ${req.params.id};`
+  )
   await db.execute(`DELETE FROM projects WHERE id = ${req.params.id};`)
 
   res.status(200).json("Project deleted successfully")
+})
+
+// @desc    Update project
+// @route   PUT /api/project/:id
+// @access  Private
+const updateProject = asyncHandler(async (req, res) => {
+  const { name, status, dueDate, description } = req.body
+
+  const [isLeader] = await db.execute(
+    `SELECT role FROM users_projects WHERE userId = ${req.user.id} AND projectId = ${req.params.id} AND role = 'Project leader'`
+  )
+
+  if (isLeader.length === 0) {
+    res.status(401)
+    throw new Error("Only the project leader can update it.")
+  }
+
+  if (
+    name !== undefined ||
+    status !== undefined ||
+    dueDate !== undefined ||
+    description !== undefined
+  ) {
+    const updatedValues = {
+      ...(name && { name: name }),
+      ...(status && { status: status }),
+      ...(dueDate && { dueDate: dueDate }),
+      ...(description && { description: description }),
+    }
+    const whereClause = {
+      id: req.params.id,
+    }
+
+    const [updatedProject] = await db.execute(
+      db.format("UPDATE projects SET ? WHERE ?", [updatedValues, whereClause])
+    )
+
+    res.status(200).json(updatedProject)
+  } else {
+    res.status(200).json("There's nothing to change")
+  }
 })
 
 module.exports = {
@@ -116,4 +163,5 @@ module.exports = {
   getProjects,
   getProject,
   deleteProject,
+  updateProject,
 }
