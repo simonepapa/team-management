@@ -6,12 +6,9 @@ const {
   getProject,
   deleteProject,
   updateProject,
-  //getMembers,
   addMember,
   removeMember,
   updateMember,
-  //getMemberTasks,
-  //getProjectTasks,
 } = require("../controllers/projectController.js")
 
 const { protect } = require("../middleware/authMiddleware")

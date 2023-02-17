@@ -76,7 +76,7 @@ const getProject = asyncHandler(async (req, res) => {
   if (project.length === 0) {
     res.status(404)
     throw new Error(
-      "Couldn't find project. Either it doesn't exists or you don't have enough permissions to access it."
+      "Couldn't find given project. Either it doesn't exists or you don't have enough permissions to access it."
     )
   }
 
@@ -239,6 +239,11 @@ const removeMember = asyncHandler(async (req, res) => {
     `SELECT id FROM users
     WHERE email = '${email}'`
   )
+
+  if (user.length === 0) {
+    res.status(401)
+    throw new Error("Could not find a user with given email.")
+  }
 
   if (isLeader[0].userId === user[0].id) {
     res.status(401)

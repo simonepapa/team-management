@@ -6,7 +6,6 @@ const {
   getTeam,
   deleteTeam,
   updateTeam,
-  //getMembers,
   addMember,
   updateMember,
   removeMember,
