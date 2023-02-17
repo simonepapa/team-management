@@ -181,7 +181,9 @@ const addMember = asyncHandler(async (req, res) => {
 
   if (isLeader.length === 0) {
     res.status(401)
-    throw new Error("Only the project leader and the co-leaders can add a member.")
+    throw new Error(
+      "Only the project leader and the co-leaders can add a member."
+    )
   }
 
   const [user] = await db.execute(
@@ -189,12 +191,31 @@ const addMember = asyncHandler(async (req, res) => {
     WHERE email = '${email}'`
   )
 
-  // Create record in users_projects
-  const [userProject] = await db.execute(
-    `INSERT INTO users_projects(userId, projectId, role) VALUES(${user[0].id}, ${req.params.id}, 'Collaborator')`
+  const [team] = await db.execute(
+    `SELECT teamId FROM teams_projects WHERE projectId = ${req.params.id}`
   )
 
-  res.status(201).json(userProject)
+  // If team exists
+  if (team.length !== 0) {
+    // Check if the user we're trying to add is a member of the project's team
+    const [isTeamMember] = await db.execute(
+      `SELECT userId FROM users_teams WHERE userId = ${user[0].id} AND teamId = ${team[0].teamId}`
+    )
+
+    if (isTeamMember.length === 0) {
+      res.status(400)
+      throw new Error("Member is not part of the project's team")
+    }
+
+    // If successful, create record in users_projects
+    const [userProject] = await db.execute(
+      `INSERT INTO users_projects(userId, projectId, role) VALUES(${user[0].id}, ${req.params.id}, 'Collaborator')`
+    )
+
+    res.status(201).json(userProject)
+  }
+
+  res.status(400).json("Could not add the member to the project.")  
 })
 
 // @desc    Remove member from project
@@ -290,5 +311,5 @@ module.exports = {
   updateProject,
   addMember,
   removeMember,
-  updateMember
+  updateMember,
 }
