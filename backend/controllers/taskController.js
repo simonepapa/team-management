@@ -249,6 +249,40 @@ const getTaskSubtasks = asyncHandler(async (req, res) => {
   res.status(200).json(tasks)
 })
 
+// @desc    Complete/uncomplete task
+// @route   PUT /api/tasks/:id/status
+// @access  Private
+const completeTask = asyncHandler(async (req, res) => {
+  const { status } = req.body
+  if (!(status === "Completed" || status === "Not completed")) {
+    res.status(400)
+    throw new Error("Status value is not valid")
+  }
+
+  const [isAssignee] = await db.execute(
+    `SELECT userId FROM users_tasks WHERE taskId = ${req.params.id} AND userId = ${req.user.id}`
+  )
+
+  if (isAssignee.length === 0) {
+    res.status(401)
+    throw new Error("Only the task assignee can change its status")
+  }
+
+  const updatedValues = {
+    status: status,
+    ...(status === "Completed" ? {completedAt: new Date()} : {completedAt: null})
+  }
+  const whereClause = {
+    id: req.params.id,
+  }
+
+  const [updatedTask] = await db.execute(
+    db.format("UPDATE tasks SET ? WHERE ?", [updatedValues, whereClause])
+  )
+
+  res.status(201).json(updatedTask)
+})
+
 module.exports = {
   createTask,
   getTasks,
@@ -257,5 +291,6 @@ module.exports = {
   getMain,
   getSub,
   getTask,
-  getTaskSubtasks
+  getTaskSubtasks,
+  completeTask
 }

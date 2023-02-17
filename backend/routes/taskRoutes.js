@@ -10,8 +10,8 @@ const {
   getTask,
   //updateTask,
   //deleteTask,
-  //completeTask,
-  getTaskSubtasks
+  getTaskSubtasks,
+  completeTask,
 } = require("../controllers/taskController.js")
 
 const { protect } = require("../middleware/authMiddleware")
@@ -23,5 +23,6 @@ router.route("/main").get(protect, getMain)
 router.route("/sub").get(protect, getSub)
 router.route("/:id").get(protect, getTask)
 router.route("/:id/sub").get(protect, getTaskSubtasks)
+router.route("/:id/status").put(protect, completeTask)
 
 module.exports = router
