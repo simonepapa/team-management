@@ -233,6 +233,22 @@ const getTask = asyncHandler(async (req, res) => {
   res.status(200).json(task)
 })
 
+// @desc    Get task subtasks
+// @route   GET /api/tasks/:id/sub
+// @access  Private
+const getTaskSubtasks = asyncHandler(async (req, res) => {
+  const [tasks] = await db.execute(
+    `SELECT DISTINCT t.id, t.name, t.priority, t.status, t.dueDate, t.isSubtask, t.mainTask, t.createdAt, t.updatedAt, t.completedAt
+    FROM tasks t 
+    INNER JOIN users_tasks ut
+    ON t.id = ut.taskId
+    WHERE ut.userId = ${req.user.id} AND t.isSubtask = true AND t.mainTask = ${req.params.id}
+    ORDER BY t.dueDate;`
+  )
+
+  res.status(200).json(tasks)
+})
+
 module.exports = {
   createTask,
   getTasks,
@@ -241,4 +257,5 @@ module.exports = {
   getMain,
   getSub,
   getTask,
+  getTaskSubtasks
 }
