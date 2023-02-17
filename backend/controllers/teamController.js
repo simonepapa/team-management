@@ -192,10 +192,24 @@ const removeMember = asyncHandler(async (req, res) => {
     WHERE email = '${email}'`
   )
 
+  if (user.length === 0) {
+    res.status(401)
+    throw new Error("Could not find a user with given email.")
+  }
+
   if (isLeader[0].userId === user[0].id) {
     res.status(401)
     throw new Error("Can't remove the team leader.")
   }
+
+  // Remove all the records from users_projects using teams_project to find the correct records to remove
+  await db.execute(
+    `DELETE up
+      FROM users_projects up
+      INNER JOIN teams_projects ut
+      ON up.projectId = ut.projectId
+      WHERE teamId = ${req.params.id} AND userId = ${user[0].id}`
+  )
 
   // Remove record from users_teams
   const [removedMember] = await db.execute(
