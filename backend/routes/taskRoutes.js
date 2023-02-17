@@ -5,9 +5,9 @@ const {
   getTasks,
   getCompleted,
   getUncompleted,
+  getMain,
+  getSub,
   getTask,
-  //getMain,
-  //getSub,
   //updateTask,
   //deleteTask,
   //completeTask,
@@ -19,6 +19,8 @@ const { protect } = require("../middleware/authMiddleware")
 router.route("/").post(protect, createTask).get(protect, getTasks)
 router.route("/completed").get(protect, getCompleted)
 router.route("/uncompleted").get(protect, getUncompleted)
+router.route("/main").get(protect, getMain)
+router.route("/sub").get(protect, getSub)
 router.route("/:id").get(protect, getTask)
 
 module.exports = router
