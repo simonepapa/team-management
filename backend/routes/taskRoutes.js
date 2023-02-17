@@ -3,9 +3,9 @@ const router = express.Router()
 const {
   createTask,
   getTasks,
-  getTask
-  //getCompleted,
-  //getUncompleted,
+  getCompleted,
+  getUncompleted,
+  getTask,
   //getMain,
   //getSub,
   //updateTask,
@@ -17,6 +17,8 @@ const {
 const { protect } = require("../middleware/authMiddleware")
 
 router.route("/").post(protect, createTask).get(protect, getTasks)
+router.route("/completed").get(protect, getCompleted)
+router.route("/uncompleted").get(protect, getUncompleted)
 router.route("/:id").get(protect, getTask)
 
 module.exports = router

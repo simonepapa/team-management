@@ -108,6 +108,58 @@ const getTasks = asyncHandler(async (req, res) => {
   res.status(200).json(tasks)
 })
 
+// @desc    Get completed tasks
+// @route   GET /api/tasks/completed
+// @access  Private
+const getCompleted = asyncHandler(async (req, res) => {
+  const { completedPage } = req.query
+  const offset = (completedPage === "1" || completedPage === "0") ? 0 : (completedPage - 1) * 10
+  const [tasks] = await db.execute(`
+    SELECT DISTINCT t.id, t.name, t.priority, t.status, t.dueDate, t.isSubtask, t.mainTask, t.createdAt, t.updatedAt, t.completedAt
+    FROM tasks t 
+    INNER JOIN users_tasks ut
+    ON t.id = ut.taskId
+    WHERE ut.userId = ${req.user.id} AND t.status = "Completed" AND t.isSubtask = false
+    LIMIT 10
+    OFFSET ${offset};
+  `)
+
+  const [total] = await db.execute(`
+    SELECT COUNT(*) FROM tasks t 
+    INNER JOIN users_tasks ut
+    ON t.id = ut.taskId
+    WHERE ut.userId = ${req.user.id} AND t.status = "Completed" AND t.isSubtask = false;
+  `)
+
+  res.status(200).json({ total: total, tasks: tasks })
+})
+
+// @desc    Get completed tasks
+// @route   GET /api/tasks/uncompleted
+// @access  Private
+const getUncompleted = asyncHandler(async (req, res) => {
+  const { uncompletedPage } = req.query
+  const offset = (uncompletedPage === "1" || uncompletedPage === "0") ? 0 : (uncompletedPage - 1) * 10
+  const [tasks] = await db.execute(`
+    SELECT DISTINCT t.id, t.name, t.priority, t.status, t.dueDate, t.isSubtask, t.mainTask, t.createdAt, t.updatedAt, t.completedAt
+    FROM tasks t 
+    INNER JOIN users_tasks ut
+    ON t.id = ut.taskId
+    WHERE ut.userId = ${req.user.id} AND t.status = "Not completed" AND t.isSubtask = false
+    LIMIT 10
+    OFFSET ${offset};
+  `)
+
+  const [total] = await db.execute(`
+    SELECT COUNT(*) FROM tasks t 
+    INNER JOIN users_tasks ut
+    ON t.id = ut.taskId
+    WHERE ut.userId = ${req.user.id} AND t.status = "Not completed" AND t.isSubtask = false;
+  `)
+
+  res.status(200).json({ total: total[0]["COUNT(*)"], tasks: tasks })
+})
+
 // @desc    Get a task by ID
 // @route   GET /api/tasks/:id
 // @access  Private
@@ -136,5 +188,7 @@ const getTask = asyncHandler(async (req, res) => {
 module.exports = {
   createTask,
   getTasks,
-  getTask
+  getCompleted,
+  getUncompleted,
+  getTask,
 }
