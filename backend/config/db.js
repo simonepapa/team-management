@@ -57,7 +57,7 @@ pool.execute(
     createdAt	    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ,
     updatedAt	    DATETIME on UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     completedAt	  DATETIME on UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (mainTask) REFERENCES tasks(id)
+    FOREIGN KEY (mainTask) REFERENCES tasks(id) ON DELETE CASCADE
   )`
 )
 
@@ -69,8 +69,8 @@ pool.execute(
     createdAt	    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ,
     updatedAt	    DATETIME on UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (userId, teamId),
-    FOREIGN KEY (userId) REFERENCES users(id),
-    FOREIGN KEY (teamId) REFERENCES teams(id)
+    FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (teamId) REFERENCES teams(id) ON DELETE CASCADE
   )`
 )
 
@@ -82,8 +82,8 @@ pool.execute(
     createdAt	    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ,
     updatedAt	    DATETIME on UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (userId, projectId),
-    FOREIGN KEY (userId) REFERENCES users(id),
-    FOREIGN KEY (projectId) REFERENCES projects(id)
+    FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE CASCADE
   )`
 )
 
@@ -94,8 +94,8 @@ pool.execute(
     createdAt	    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ,
     updatedAt	    DATETIME on UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (teamId, projectId),
-    FOREIGN KEY (teamId) REFERENCES teams(id),
-    FOREIGN KEY (projectId) REFERENCES projects(id)
+    FOREIGN KEY (teamId) REFERENCES teams(id) ON DELETE CASCADE,
+    FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE CASCADE
   )`
 )
 
@@ -106,8 +106,8 @@ pool.execute(
     createdAt	    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ,
     updatedAt	    DATETIME on UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (userId, taskId),
-    FOREIGN KEY (userId) REFERENCES users(id),
-    FOREIGN KEY (taskId) REFERENCES tasks(id)
+    FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (taskId) REFERENCES tasks(id) ON DELETE CASCADE
   )`
 )
 
@@ -118,8 +118,8 @@ pool.execute(
     createdAt	    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ,
     updatedAt	    DATETIME on UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (projectId, taskId),
-    FOREIGN KEY (projectId) REFERENCES projects(id),
-    FOREIGN KEY (taskId) REFERENCES tasks(id)
+    FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE CASCADE,
+    FOREIGN KEY (taskId) REFERENCES tasks(id) ON DELETE CASCADE
   )`
 )
 
