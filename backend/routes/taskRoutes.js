@@ -9,7 +9,7 @@ const {
   getSub,
   getTask,
   updateTask,
-  //deleteTask,
+  deleteTask,
   getTaskSubtasks,
   completeTask,
 } = require("../controllers/taskController.js")
@@ -21,7 +21,7 @@ router.route("/completed").get(protect, getCompleted)
 router.route("/uncompleted").get(protect, getUncompleted)
 router.route("/main").get(protect, getMain)
 router.route("/sub").get(protect, getSub)
-router.route("/:id").get(protect, getTask).put(protect, updateTask)
+router.route("/:id").get(protect, getTask).put(protect, updateTask).delete(protect, deleteTask)
 router.route("/:id/sub").get(protect, getTaskSubtasks)
 router.route("/:id/status").put(protect, completeTask)
 

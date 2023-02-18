@@ -299,10 +299,7 @@ const updateTask = asyncHandler(async (req, res) => {
   }
 
   // If there's something to change
-  if (
-    dueDate !== undefined ||
-    priority !== undefined
-  ) {
+  if (dueDate !== undefined || priority !== undefined) {
     const updatedValues = {
       ...(dueDate && { dueDate: dueDate }),
       ...(priority && { priority: priority }),
@@ -319,6 +316,57 @@ const updateTask = asyncHandler(async (req, res) => {
   } else {
     res.status(200).json("There's nothing to change")
   }
+})
+
+// @desc    Delete task
+// @route   DELETE /api/tasks/:id
+// @access  Private
+const deleteTask = asyncHandler(async (req, res) => {
+  // Retrieve the project ID
+  const [project] = await db.execute(
+    `SELECT projectId FROM projects_tasks WHERE taskId = ${req.params.id}`
+  )
+
+  if (project.length === 0) {
+    res.status(400)
+    throw new Error("The task does not exists.")
+  }
+
+  // Retrieve the project role of the user making the request
+  const [userRole] = await db.execute(
+    `SELECT role FROM users_projects WHERE userId = ${req.user.id} AND projectId = ${project[0].projectId}`
+  )
+
+  if (userRole.length === 0) {
+    res.status(401)
+    throw new Error("User is not part of the project.")
+  }
+
+  // If the user is not the project leader, then we check that he is the task assignee. The project leader can delete the tasks of every member of the project
+  if (userRole[0].role !== "Project leader") {
+    // Check if the user is the task assignee
+    const [isAssignee] = await db.execute(
+      `SELECT userId FROM users_tasks WHERE taskId = ${req.params.id} AND userId = ${req.user.id}`
+    )
+
+    if (isAssignee.length === 0) {
+      res.status(401)
+      throw new Error("Only the task assignee can delete it.")
+    }
+  }
+
+  // First we delete the records from tables with a foreign key, then we delete the task
+  await db.execute(
+    `DELETE FROM projects_tasks WHERE taskId = ${req.params.id};`
+  )
+  await db.execute(
+    `DELETE FROM users_tasks WHERE taskId = ${req.params.id};`
+  )
+  await db.execute(
+    `DELETE FROM tasks WHERE id = ${req.params.id};`
+  )
+
+  res.status(201).json("Task deleted successfully")
 })
 
 // @desc    Complete/uncomplete task
@@ -372,5 +420,6 @@ module.exports = {
   getTask,
   getTaskSubtasks,
   updateTask,
+  deleteTask,
   completeTask,
 }
