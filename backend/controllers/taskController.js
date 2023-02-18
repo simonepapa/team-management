@@ -73,12 +73,12 @@ const createTask = asyncHandler(async (req, res) => {
   const [task] = await db.execute(
     db.format("INSERT INTO tasks SET ?", [fields])
   )
-  
+
   // Create record in users_tasks
   await db.execute(
     `INSERT INTO users_tasks(userId, taskId) VALUES (${user[0].id}, ${task.insertId})`
   )
-  
+
   // Create record in projects_tasks
   await db.execute(
     `INSERT INTO projects_tasks(projectId, taskId) VALUES (${project}, ${task.insertId})`
@@ -113,7 +113,12 @@ const getTasks = asyncHandler(async (req, res) => {
 // @access  Private
 const getCompleted = asyncHandler(async (req, res) => {
   const { completedPage } = req.query
-  const offset = (completedPage === "1" || completedPage === "0" || completedPage === undefined) ? 0 : (completedPage - 1) * 10
+  const offset =
+    completedPage === "1" ||
+    completedPage === "0" ||
+    completedPage === undefined
+      ? 0
+      : (completedPage - 1) * 10
 
   const [tasks] = await db.execute(`
     SELECT DISTINCT t.id, t.name, t.priority, t.status, t.dueDate, t.isSubtask, t.mainTask, t.createdAt, t.updatedAt, t.completedAt
@@ -141,7 +146,12 @@ const getCompleted = asyncHandler(async (req, res) => {
 // @access  Private
 const getUncompleted = asyncHandler(async (req, res) => {
   const { uncompletedPage } = req.query
-  const offset = (uncompletedPage === "1" || uncompletedPage === "0" || uncompletedPage === undefined) ? 0 : (uncompletedPage - 1) * 10
+  const offset =
+    uncompletedPage === "1" ||
+    uncompletedPage === "0" ||
+    uncompletedPage === undefined
+      ? 0
+      : (uncompletedPage - 1) * 10
 
   const [tasks] = await db.execute(`
     SELECT DISTINCT t.id, t.name, t.priority, t.status, t.dueDate, t.isSubtask, t.mainTask, t.createdAt, t.updatedAt, t.completedAt
@@ -169,7 +179,8 @@ const getUncompleted = asyncHandler(async (req, res) => {
 // @access  Private
 const getMain = asyncHandler(async (req, res) => {
   const { page } = req.query
-  const offset = (page === "1" || page === "0" || page === undefined) ? 0 : (page - 1) * 10
+  const offset =
+    page === "1" || page === "0" || page === undefined ? 0 : (page - 1) * 10
 
   const [tasks] = await db.execute(`
     SELECT DISTINCT t.id, t.name, t.priority, t.status, t.dueDate, t.isSubtask, t.mainTask, t.createdAt, t.updatedAt, t.completedAt
@@ -249,6 +260,67 @@ const getTaskSubtasks = asyncHandler(async (req, res) => {
   res.status(200).json(tasks)
 })
 
+// @desc    Update task
+// @route   PUT /api/tasks/:id
+// @access  Private
+const updateTask = asyncHandler(async (req, res) => {
+  const { dueDate, priority, assigneeEmail } = req.body
+
+  // If the assigneeEmail is different from an empty string and is not a valid email
+  // The empty string check is due to the fact that if the string is empty, then the assignee is the user making the request
+  if (assigneeEmail !== "" && !validateEmail(assigneeEmail)) {
+    res.status(400)
+    throw new Error("Bad email format")
+  }
+
+  // If assigneeEmail is not empty put the email in WHERE clause, else put the ID of the user making the request
+  const fields = {
+    ...(assigneeEmail !== "" ? { email: assigneeEmail } : { id: req.user.id }),
+  }
+
+  // Check if the user exists
+  const [user] = await db.execute(
+    db.format("SELECT id FROM users WHERE ?", [fields])
+  )
+
+  if (user.length === 0) {
+    res.status(401)
+    throw new Error("Could not find a user with given email.")
+  }
+
+  // Check if the user is the task assignee
+  const [isAssignee] = await db.execute(
+    `SELECT userId FROM users_tasks WHERE taskId = ${req.params.id} AND userId = ${user[0].id}`
+  )
+
+  if (isAssignee.length === 0) {
+    res.status(401)
+    throw new Error("Only the task assignee can update it")
+  }
+
+  // If there's something to change
+  if (
+    dueDate !== undefined ||
+    priority !== undefined
+  ) {
+    const updatedValues = {
+      ...(dueDate && { dueDate: dueDate }),
+      ...(priority && { priority: priority }),
+    }
+    const whereClause = {
+      id: req.params.id,
+    }
+
+    const [updatedTask] = await db.execute(
+      db.format("UPDATE tasks SET ? WHERE ?", [updatedValues, whereClause])
+    )
+
+    res.status(201).json(updatedTask)
+  } else {
+    res.status(200).json("There's nothing to change")
+  }
+})
+
 // @desc    Complete/uncomplete task
 // @route   PUT /api/tasks/:id/status
 // @access  Private
@@ -270,7 +342,9 @@ const completeTask = asyncHandler(async (req, res) => {
 
   const updatedValues = {
     status: status,
-    ...(status === "Completed" ? {completedAt: new Date()} : {completedAt: null})
+    ...(status === "Completed"
+      ? { completedAt: new Date() }
+      : { completedAt: null }),
   }
   const whereClause = {
     id: req.params.id,
@@ -283,6 +357,11 @@ const completeTask = asyncHandler(async (req, res) => {
   res.status(201).json(updatedTask)
 })
 
+const validateEmail = function (email) {
+  const re = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+  return re.test(email)
+}
+
 module.exports = {
   createTask,
   getTasks,
@@ -292,5 +371,6 @@ module.exports = {
   getSub,
   getTask,
   getTaskSubtasks,
-  completeTask
+  updateTask,
+  completeTask,
 }
