@@ -6,12 +6,19 @@ export const apiSlice = createApi({
   endpoints: (builder) => ({
     register: builder.mutation({
       query: (payload) => ({
-        url: '/users',
-        method: 'POST',
+        url: "/users",
+        method: "POST",
         body: payload,
-      })
-    })
+      }),
+    }),
+    login: builder.mutation({
+      query: (payload) => ({
+        url: "/users/login",
+        method: "POST",
+        body: payload,
+      }),
+    }),
   }),
 })
 
-export const {useRegisterMutation} = apiSlice
+export const { useRegisterMutation, useLoginMutation } = apiSlice
