@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import { ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
+import Login from "./pages/Login"
 import Register from "./pages/Register"
 
 function App() {
@@ -10,6 +11,7 @@ function App() {
         <div className="bg-base-300 px-4 xl:px-0">
           <Routes>
             <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
           </Routes>
         </div>
       </Router>

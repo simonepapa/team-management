@@ -5,17 +5,16 @@ import { useRegisterMutation } from "../features/api/apiSlice"
 import Spinner from "../components/Spinner"
 
 function Register() {
-  const [register, { isLoading }] =
-    useRegisterMutation()
-
-  const navigate = useNavigate()
-
+  const [register, { isLoading }] = useRegisterMutation()
+  
   const [formData, setFormData] = useState({
     userName: "",
     userEmail: "",
     userPassword: "",
     userPassword2: "",
   })
+
+  const navigate = useNavigate()
 
   const { userName, userEmail, userPassword, userPassword2 } = formData
 
