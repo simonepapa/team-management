@@ -1,12 +1,53 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "react-toastify"
+import { useRegisterMutation } from "../features/api/apiSlice"
 import Spinner from "../components/Spinner"
 
 function Register() {
-  const onChange = () => {}
+  const [register, { isLoading }] =
+    useRegisterMutation()
 
-  const onSubmit = () => {}
+  const navigate = useNavigate()
+
+  const [formData, setFormData] = useState({
+    userName: "",
+    userEmail: "",
+    userPassword: "",
+    userPassword2: "",
+  })
+
+  const { userName, userEmail, userPassword, userPassword2 } = formData
+
+  const onChange = (e) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      [e.target.name]: e.target.value,
+    }))
+  }
+
+  const onSubmit = (e) => {
+    e.preventDefault()
+    if (userPassword !== userPassword2) {
+      toast.error("Passwords do not match")
+    } else {
+      const userData = {
+        name: userName,
+        email: userEmail,
+        password: userPassword,
+      }
+
+      // Use mutation and immediately check if it's successful (redirect to "/") or not (toast the error)
+      register(userData)
+        .unwrap()
+        .then(() => navigate("/"))
+        .catch((error) => toast.error(error.data.message))
+    }
+  }
+
+  if (isLoading) {
+    return <Spinner />
+  }
 
   return (
     <main className="container flex flex-wrap justify-center mx-auto pb-4 pt-24">
@@ -18,7 +59,7 @@ function Register() {
               onChange={onChange}
               required
               id="name"
-              name="name"
+              name="userName"
               type="text"
               placeholder="Type your name here"
               className="input w-full max-w-xs"
@@ -30,7 +71,7 @@ function Register() {
               onChange={onChange}
               required
               id="email"
-              name="email"
+              name="userEmail"
               type="email"
               placeholder="Type your email here"
               className="input w-full max-w-xs"
@@ -44,7 +85,7 @@ function Register() {
               onChange={onChange}
               required
               id="password"
-              name="password"
+              name="userPassword"
               type="password"
               placeholder="Type your password here"
               className="input w-full max-w-xs"
@@ -56,7 +97,7 @@ function Register() {
               onChange={onChange}
               required
               id="password2"
-              name="password2"
+              name="userPassword2"
               type="password"
               placeholder="Confirm password"
               className="input w-full max-w-xs"
