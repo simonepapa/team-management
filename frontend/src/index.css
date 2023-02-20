@@ -64,3 +64,59 @@ body {
     transform: rotate(360deg);
   }
 }
+
+.link-inactive {
+  pointer-events: none;
+}
+.logo {
+  font-family: "IBM Plex Serif", serif;
+}
+.status-inactive {
+  --tw-border-opacity: 0;
+  background-color: hsl(var(--n) / var(--tw-bg-opacity));
+  --tw-bg-opacity: 0.2;
+  color: hsl(var(--bc) / var(--tw-text-opacity));
+  --tw-text-opacity: 0.2;
+}
+.sidebar {
+  position: absolute;
+  top: 0;
+  width: 0;
+  height: 100vh;
+  transition: width 0.2s ease-in;
+  overflow: hidden;
+}
+.sidebar-wide {
+  width: 100vw;
+}
+.sidebar-active {
+  background-color: hsl(var(--b3));
+  border-radius: 8px;
+}
+.burger.btn-ghost {
+  background-color: transparent;
+}
+
+@media (min-width: 1280px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    width: 67px;
+    height: 100vh;
+    transition: width 0.2s ease-in;
+  }
+  .sidebar p {
+    opacity: 0;
+    transition: opacity 0.2s ease-in;
+  }
+  .sidebar:hover {
+    width: 134px;
+  }
+  .sidebar:hover p {
+    opacity: 1;
+  }
+  .sidebar-active {
+    background-color: hsl(var(--b3));
+    border-radius: 8px;
+  }
+}
