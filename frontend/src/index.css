@@ -8,6 +8,9 @@ body {
   font-family: "Roboto", sans-serif;
 }
 /** SPINNER */
+.fullscreen-spinner {
+  background-color: rgba(0, 0, 0, 0.5);
+}
 .spinner-container {
   position: static;
   background-color: transparent;
@@ -15,6 +18,14 @@ body {
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
+}
+.fullscreen-spinner .spinner-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.5);
 }
 .lds-ring {
   display: inline-block;
