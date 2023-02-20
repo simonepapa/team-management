@@ -1,12 +1,17 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
-import { BsPlusCircle } from "react-icons/bs"
+import { BsPlusCircle, BsXLg } from "react-icons/bs"
 import { toast } from "react-toastify"
+import Modal from "react-modal"
 import Spinner from "../components/Spinner"
 import Card from "../components/Card"
 import { useGetTeamsQuery } from "../features/api/apiSlice"
 
+Modal.setAppElement("#root")
+
 function Teams() {
+  const [modalIsOpen, setModalIsOpen] = useState(false)
+
   const { data: teams = [], isLoading, isError, message } = useGetTeamsQuery()
 
   useEffect(() => {
@@ -14,6 +19,18 @@ function Teams() {
       toast.error(message)
     }
   }, [isError, message])
+
+  const openModal = () => {
+    setModalIsOpen(true)
+  }
+
+  const closeModal = () => {
+    setModalIsOpen(false)
+  }
+
+  const onChange = () => {}
+
+  const onSubmit = () => {}
 
   if (isLoading) {
     return (
@@ -24,53 +41,94 @@ function Teams() {
   }
 
   return (
-    <main className="container flex flex-wrap pb-4 pt-24">
-      <div className="text-xl breadcrumbs pb-6 grow w-screen truncate w-screen">
-        <ul>
-          <li>
-            <Link to="/">Home</Link>
-          </li>
-          <li>
-            <p>Teams</p>
-          </li>
-        </ul>
-      </div>
-      <section
-        className="shadow-common h-fit bg-base-100 rounded-lg px-6 pt-6 pb-12 mb-6"
-        style={{ width: "90vw" }}
+    <>
+      <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={closeModal}
+        contentLabel="Create team"
+        className="w-11/12 md:w-9/12 xl:w-3/12 top-1/2 left-1/2 bottom-auto right-auto -translate-y-2/4 -translate-x-2/4 relative inset-y-1/2 rounded-lg bg-base-100 p-6 border border-base-100 overflow-y-auto max-h-75p"
+        style={{
+          overlay: { backgroundColor: "rgba(0,0,0,0.65)", zIndex: "50" },
+        }}
       >
-        <h2 className="text-2xl text-base-content uppercase font-bold mb-6">
-          My Team
-        </h2>
-        <div className="flex items-center hover:cursor-pointer mb-8">
-          <div className="w-12 h-12 flex items-center justify-center bg-base-300 rounded-lg mr-3">
-            <BsPlusCircle className="w-8 h-8" />
+        <div className="flex justify-between">
+          <h2 className="text-2xl font-bold">New team</h2>
+          <BsXLg className="ml-8 hover:cursor-pointer" onClick={closeModal} />
+        </div>
+        <div>
+          <form onSubmit={onSubmit} className="flex flex-col items-center mt-2">
+            <div className="flex flex-col w-screen max-w-xs">
+              <p className="text-normal mb-1">Team name</p>
+              <input
+                onChange={onChange}
+                required
+                id="name"
+                name="name"
+                type="text"
+                placeholder="Type team name here"
+                className="input input-bordered w-screen max-w-xs"
+              />
+            </div>
+            <div className="w-full flex justify-between mt-8">
+              <button className="btn">Create</button>
+              <button onClick={closeModal} className="btn">
+                Go back
+              </button>
+            </div>
+          </form>
+        </div>
+      </Modal>
+      <main className="container flex flex-wrap pb-4 pt-24">
+        <div className="text-xl breadcrumbs pb-6 grow w-screen truncate w-screen">
+          <ul>
+            <li>
+              <Link to="/">Home</Link>
+            </li>
+            <li>
+              <p>Teams</p>
+            </li>
+          </ul>
+        </div>
+        <section
+          className="shadow-common h-fit bg-base-100 rounded-lg px-6 pt-6 pb-12 mb-6"
+          style={{ width: "90vw" }}
+        >
+          <h2 className="text-2xl text-base-content uppercase font-bold mb-6">
+            My Team
+          </h2>
+          <div
+            onClick={openModal}
+            className="flex items-center hover:cursor-pointer mb-8"
+          >
+            <div className="w-12 h-12 flex items-center justify-center bg-base-300 rounded-lg mr-3">
+              <BsPlusCircle className="w-8 h-8" />
+            </div>
+            <p className="text-lg text-base-content">Create new</p>
           </div>
-          <p className="text-lg text-base-content">Create new</p>
-        </div>
-        <div className="flex flex-wrap">
-          {isLoading ? (
-            <Spinner />
-          ) : (
-            <>
-              {teams.map((team) => (
-                <Link
-                  key={team && team.id}
-                  to={`/teams/${team.id}`}
-                  title={team.name}
-                >
-                  <Card
-                    image="https://picsum.photos/200/300"
-                    title={team.name && team.name}
-                    teammates={5}
-                  />
-                </Link>
-              ))}
-            </>
-          )}
-        </div>
-      </section>
-    </main>
+          <div className="flex flex-wrap">
+            {isLoading ? (
+              <Spinner />
+            ) : (
+              <>
+                {teams.map((team) => (
+                  <Link
+                    key={team && team.id}
+                    to={`/teams/${team.id}`}
+                    title={team.name}
+                  >
+                    <Card
+                      image="https://picsum.photos/200/300"
+                      title={team.name && team.name}
+                      teammates={5}
+                    />
+                  </Link>
+                ))}
+              </>
+            )}
+          </div>
+        </section>
+      </main>
+    </>
   )
 }
 
