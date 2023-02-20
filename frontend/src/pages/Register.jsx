@@ -39,7 +39,10 @@ function Register() {
       // Use mutation and immediately check if it's successful (redirect to "/") or not (toast the error)
       register(userData)
         .unwrap()
-        .then(() => navigate("/"))
+        .then((response) => {
+          localStorage.setItem("user", JSON.stringify(response))
+          navigate("/")
+        })
         .catch((error) => toast.error(error.data.message))
     }
   }
