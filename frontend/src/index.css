@@ -93,6 +93,14 @@ body {
   background-color: hsl(var(--b3));
   border-radius: 8px;
 }
+.nav-icon {
+  width: 30px;
+  max-width: 30px;
+  height: auto;
+}
+.container {
+  margin-left: 0;
+}
 .burger.btn-ghost {
   background-color: transparent;
 }
@@ -118,5 +126,13 @@ body {
   .sidebar-active {
     background-color: hsl(var(--b3));
     border-radius: 8px;
+  }
+  .nav-icon {
+    width: 30px;
+    max-width: 30px;
+    height: auto;
+  }
+  .container {
+    margin-left: 150px;
   }
 }

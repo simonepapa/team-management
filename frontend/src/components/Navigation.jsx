@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { NavLink, useNavigate } from "react-router-dom"
+import LightMode from "./LightMode"
 import {
   BsHouseDoor,
   BsCheck2Circle,
@@ -144,6 +145,10 @@ function Navigation() {
             </NavLink>
           </>
         )}
+
+        <div style={!user ? { marginTop: "5rem" } : { marginTop: "0" }}>
+          <LightMode />
+        </div>
 
         {user && (
           <div
