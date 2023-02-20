@@ -30,10 +30,22 @@ export const apiSlice = createApi({
         body: payload,
       }),
     }),
+    createTeam: builder.mutation({
+      query: (payload) => ({
+        url: "/teams",
+        method: "POST",
+        body: payload,
+      }),
+    }),
     getTeams: builder.query({
       query: () => `/teams`,
     }),
   }),
 })
 
-export const { useRegisterMutation, useLoginMutation, useGetTeamsQuery } = apiSlice
+export const {
+  useRegisterMutation,
+  useLoginMutation,
+  useCreateTeamMutation,
+  useGetTeamsQuery,
+} = apiSlice

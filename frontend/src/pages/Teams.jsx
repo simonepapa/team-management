@@ -1,18 +1,25 @@
 import { useEffect, useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { BsPlusCircle, BsXLg } from "react-icons/bs"
 import { toast } from "react-toastify"
 import Modal from "react-modal"
 import Spinner from "../components/Spinner"
 import Card from "../components/Card"
-import { useGetTeamsQuery } from "../features/api/apiSlice"
+import {
+  useCreateTeamMutation,
+  useGetTeamsQuery,
+} from "../features/api/apiSlice"
 
 Modal.setAppElement("#root")
 
 function Teams() {
   const [modalIsOpen, setModalIsOpen] = useState(false)
+  const [name, setName] = useState("")
 
   const { data: teams = [], isLoading, isError, message } = useGetTeamsQuery()
+  const [createTeam, { isCreating }] = useCreateTeamMutation()
+
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (isError) {
@@ -28,9 +35,23 @@ function Teams() {
     setModalIsOpen(false)
   }
 
-  const onChange = () => {}
+  const onChange = (e) => {
+    setName((prevState) => ({
+      ...prevState,
+      [e.target.name]: e.target.value,
+    }))
+  }
 
-  const onSubmit = () => {}
+  const onSubmit = async (e) => {
+    e.preventDefault()
+    createTeam({name: name.teamName})
+      .unwrap()
+      .then((response) => {
+        closeModal()
+        navigate(`/teams/${response.id}`)
+      })
+      .catch((error) => toast.error(error.data.message))
+  }
 
   if (isLoading) {
     return (
@@ -51,32 +72,44 @@ function Teams() {
           overlay: { backgroundColor: "rgba(0,0,0,0.65)", zIndex: "50" },
         }}
       >
-        <div className="flex justify-between">
-          <h2 className="text-2xl font-bold">New team</h2>
-          <BsXLg className="ml-8 hover:cursor-pointer" onClick={closeModal} />
-        </div>
-        <div>
-          <form onSubmit={onSubmit} className="flex flex-col items-center mt-2">
-            <div className="flex flex-col w-screen max-w-xs">
-              <p className="text-normal mb-1">Team name</p>
-              <input
-                onChange={onChange}
-                required
-                id="name"
-                name="name"
-                type="text"
-                placeholder="Type team name here"
-                className="input input-bordered w-screen max-w-xs"
+        {!isCreating ? (
+          <>
+            <div className="flex justify-between">
+              <h2 className="text-2xl font-bold">New team</h2>
+              <BsXLg
+                className="ml-8 hover:cursor-pointer"
+                onClick={closeModal}
               />
             </div>
-            <div className="w-full flex justify-between mt-8">
-              <button className="btn">Create</button>
-              <button onClick={closeModal} className="btn">
-                Go back
-              </button>
+            <div>
+              <form
+                onSubmit={onSubmit}
+                className="flex flex-col items-center mt-2"
+              >
+                <div className="flex flex-col w-screen max-w-xs">
+                  <p className="text-normal mb-1">Team name</p>
+                  <input
+                    onChange={onChange}
+                    required
+                    id="name"
+                    name="teamName"
+                    type="text"
+                    placeholder="Type team name here"
+                    className="input input-bordered w-screen max-w-xs"
+                  />
+                </div>
+                <div className="w-full flex justify-between mt-8">
+                  <button className="btn">Create</button>
+                  <button onClick={closeModal} className="btn">
+                    Go back
+                  </button>
+                </div>
+              </form>
             </div>
-          </form>
-        </div>
+          </>
+        ) : (
+          <Spinner />
+        )}
       </Modal>
       <main className="container flex flex-wrap pb-4 pt-24">
         <div className="text-xl breadcrumbs pb-6 grow w-screen truncate w-screen">
