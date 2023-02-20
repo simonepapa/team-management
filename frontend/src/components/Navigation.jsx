@@ -146,7 +146,7 @@ function Navigation() {
           </>
         )}
 
-        <div style={!user ? { marginTop: "5rem" } : { marginTop: "0" }}>
+        <div style={!user ? { marginTop: "5rem" } : { marginTop: "2.5rem" }}>
           <LightMode />
         </div>
 
