@@ -146,7 +146,23 @@ function Navigation() {
           </>
         )}
 
-        <div style={!user ? { marginTop: "5rem" } : { marginTop: "2.5rem" }}>
+        <div className="flex flex-col items-center xl:block" style={!user ? { marginTop: "5rem" } : { marginTop: "2.5rem" }}>
+          <NavLink
+            to="/login"
+            className={({ isActive }) =>
+              isActive ? "font-bold text-xl mb-10 xl:hidden" : "text-xl mb-10 xl:hidden"
+            }
+          >
+            Log in
+          </NavLink>
+          <NavLink
+            to="/register"
+            className={({ isActive }) =>
+              isActive ? "font-bold text-xl mb-10 xl:hidden" : "text-xl mb-10 xl:hidden"
+            }
+          >
+            Sign up
+          </NavLink>
           <LightMode />
         </div>
 
