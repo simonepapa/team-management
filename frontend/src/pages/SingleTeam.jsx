@@ -12,6 +12,7 @@ import {
   useGetTeamQuery,
   useUpdateTeamMutation,
   useDeleteTeamMutation,
+  useAddTeamMemberMutation,
 } from "../features/api/apiSlice"
 
 Modal.setAppElement("#root")
@@ -46,10 +47,10 @@ function SingleTeam() {
     isLoading,
     isError,
     message,
-    refetch,
   } = useGetTeamQuery(params.teamId)
   const [updateTeam, { isUpdating }] = useUpdateTeamMutation()
   const [deleteTeam, { isDeleting }] = useDeleteTeamMutation()
+  const [addMember, { isAdding }] = useAddTeamMemberMutation()
 
   const { team, projects, users: members, leader } = teamObject
 
@@ -131,7 +132,6 @@ function SingleTeam() {
     updateTeam({ teamId: params.teamId, name: name.teamName })
       .unwrap()
       .then(() => {
-        refetch()
         closeUpdateModal()
       })
       .catch((error) => toast.error(error.data.message))
@@ -140,6 +140,12 @@ function SingleTeam() {
   // Add member
   const onAddMember = (e) => {
     e.preventDefault()
+    addMember({ teamId: params.teamId, email: email.memberEmail })
+      .unwrap()
+      .then(() => {
+        closeAddMemberModal()
+      })
+      .catch((error) => toast.error(error.data.message))
   }
 
   if (isLoading) {
@@ -149,8 +155,6 @@ function SingleTeam() {
       </div>
     )
   }
-
-  console.log(params.teamId)
 
   return (
     <>
@@ -279,37 +283,41 @@ function SingleTeam() {
             onClick={closeAddMemberModal}
           />
         </div>
-        <div>
-          <form
-            onSubmit={onAddMember}
-            className="flex flex-col items-center mt-2"
-          >
-            <div className="flex flex-col w-screen max-w-xs">
-              <p className="text-normal mb-1">Email</p>
-              <input
-                onChange={onAddMemberChange}
-                required
-                id="memberEmail"
-                name="memberEmail"
-                type="email"
-                placeholder="Type member email here"
-                className="input input-bordered w-screen max-w-xs"
-              />
-            </div>
-            <div className="w-full flex justify-between mt-8">
-              <button type="submit" className="btn">
-                Add
-              </button>
-              <button
-                type="button"
-                onClick={closeAddMemberModal}
-                className="btn"
-              >
-                Go back
-              </button>
-            </div>
-          </form>
-        </div>
+        {!isAdding ? (
+          <div>
+            <form
+              onSubmit={onAddMember}
+              className="flex flex-col items-center mt-2"
+            >
+              <div className="flex flex-col w-screen max-w-xs">
+                <p className="text-normal mb-1">Email</p>
+                <input
+                  onChange={onAddMemberChange}
+                  required
+                  id="memberEmail"
+                  name="memberEmail"
+                  type="email"
+                  placeholder="Type member email here"
+                  className="input input-bordered w-screen max-w-xs"
+                />
+              </div>
+              <div className="w-full flex justify-between mt-8">
+                <button type="submit" className="btn">
+                  Add
+                </button>
+                <button
+                  type="button"
+                  onClick={closeAddMemberModal}
+                  className="btn"
+                >
+                  Go back
+                </button>
+              </div>
+            </form>
+          </div>
+        ) : (
+          <Spinner />
+        )}
       </Modal>
 
       <main className="container flex flex-wrap pb-4 pt-24">
