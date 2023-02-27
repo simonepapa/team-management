@@ -7,6 +7,7 @@ import Login from "./pages/Login"
 import Register from "./pages/Register"
 import Home from "./pages/Home"
 import Teams from "./pages/Teams"
+import SingleTeam from "./pages/SingleTeam"
 
 function App() {
   return (
@@ -20,6 +21,9 @@ function App() {
             </Route>
             <Route path="/teams" element={<PrivateRoute />}>
               <Route path="/teams" element={<Teams />} />
+            </Route>
+            <Route path="/teams/:teamId" element={<PrivateRoute />}>
+              <Route path="/teams/:teamId" element={<SingleTeam />} />
             </Route>
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
