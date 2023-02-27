@@ -8,7 +8,10 @@ import { AgGridReact } from "ag-grid-react"
 import "ag-grid-community/styles/ag-grid.css"
 import "ag-grid-community/styles/ag-theme-alpine.css"
 import TeamMember from "../components/TeamMember"
-import { useGetTeamQuery, useUpdateTeamMutation } from "../features/api/apiSlice"
+import {
+  useGetTeamQuery,
+  useUpdateTeamMutation,
+} from "../features/api/apiSlice"
 
 Modal.setAppElement("#root")
 
@@ -37,7 +40,9 @@ function SingleTeam() {
     isLoading,
     isError,
     message,
+    refetch
   } = useGetTeamQuery(params.teamId)
+  const [updateTeam, { isUpdating }] = useUpdateTeamMutation()
 
   const { team, projects, users: members } = teamObject
 
@@ -93,8 +98,13 @@ function SingleTeam() {
   // Update project info
   const onUpdate = (e) => {
     e.preventDefault()
-
-    closeModal()
+    updateTeam({ teamId: params.teamId, name: name.teamName })
+      .unwrap()
+      .then(() => {
+        refetch()
+        closeModal()
+      })
+      .catch((error) => toast.error(error.data.message))
   }
 
   if (isLoading) {
@@ -120,37 +130,44 @@ function SingleTeam() {
           <h2 className="text-2xl font-bold">Update team</h2>
           <BsXLg className="ml-8 hover:cursor-pointer" onClick={closeModal} />
         </div>
-        <div>
-          <form onSubmit={onUpdate} className="flex flex-col items-center mt-2">
-            <div className="flex flex-col w-screen max-w-xs">
-              <p className="text-normal mb-1">Team image</p>
-              <input
-                type="file"
-                className="file-input file-input-bordered file-input-xs w-full max-w-xs"
-              />
-            </div>
-            <div className="flex flex-col w-screen max-w-xs mt-3">
-              <p className="text-normal mb-1">Team name</p>
-              <input
-                required
-                id="teamName"
-                name="teamName"
-                type="text"
-                onChange={onChange}
-                placeholder="Type team name here"
-                className="input input-bordered w-screen max-w-xs"
-              />
-            </div>
-            <div className="w-full flex justify-between mt-8">
-              <button type="submit" className="btn">
-                Update
-              </button>
-              <button type="button" onClick={closeModal} className="btn">
-                Go back
-              </button>
-            </div>
-          </form>
-        </div>
+        {!isUpdating ? (
+          <div>
+            <form
+              onSubmit={onUpdate}
+              className="flex flex-col items-center mt-2"
+            >
+              <div className="flex flex-col w-screen max-w-xs">
+                <p className="text-normal mb-1">Team image</p>
+                <input
+                  type="file"
+                  className="file-input file-input-bordered file-input-xs w-full max-w-xs"
+                />
+              </div>
+              <div className="flex flex-col w-screen max-w-xs mt-3">
+                <p className="text-normal mb-1">Team name</p>
+                <input
+                  required
+                  id="teamName"
+                  name="teamName"
+                  type="text"
+                  onChange={onChange}
+                  placeholder="Type team name here"
+                  className="input input-bordered w-screen max-w-xs"
+                />
+              </div>
+              <div className="w-full flex justify-between mt-8">
+                <button type="submit" className="btn">
+                  Update
+                </button>
+                <button type="button" onClick={closeModal} className="btn">
+                  Go back
+                </button>
+              </div>
+            </form>
+          </div>
+        ) : (
+          <Spinner />
+        )}
       </Modal>
       <main className="container flex flex-wrap pb-4 pt-24">
         <div className="text-xl breadcrumbs pb-6 grow w-screen truncate">
@@ -181,7 +198,7 @@ function SingleTeam() {
                 {team.name}
               </h2>
               <BsPencil
-                onClick={() => setModalIsOpen(true)}
+                onClick={() => openModal()}
                 className="max-w-8 w-full h-8 hover:cursor-pointer"
               />
             </div>
