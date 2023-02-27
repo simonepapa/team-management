@@ -11,13 +11,15 @@ import TeamMember from "../components/TeamMember"
 import {
   useGetTeamQuery,
   useUpdateTeamMutation,
+  useDeleteTeamMutation
 } from "../features/api/apiSlice"
 
 Modal.setAppElement("#root")
 
 function SingleTeam() {
   const gridRef = useRef()
-  const [modalIsOpen, setModalIsOpen] = useState(false)
+  const [updateModalIsOpen, setUpdateModalIsOpen] = useState(false)
+  const [deleteModalIsOpen, setDeleteModalIsOpen] = useState(false)
   const [name, setName] = useState("")
   const [projectRowData, setProjectRowData] = useState([])
 
@@ -37,16 +39,15 @@ function SingleTeam() {
 
   const user = JSON.parse(localStorage.getItem("user"))
 
-  console.log(user)
-
   const {
     data: teamObject = [],
     isLoading,
     isError,
     message,
-    refetch
+    refetch,
   } = useGetTeamQuery(params.teamId)
   const [updateTeam, { isUpdating }] = useUpdateTeamMutation()
+  const [deleteTeam, { isDeleting }] = useDeleteTeamMutation()
 
   const { team, projects, users: members, leader } = teamObject
 
@@ -84,12 +85,20 @@ function SingleTeam() {
     navigate(`/projects/${e.data.id}`)
   }
 
-  const openModal = () => {
-    setModalIsOpen(true)
+  const openUpdateModal = () => {
+    setUpdateModalIsOpen(true)
   }
 
-  const closeModal = () => {
-    setModalIsOpen(false)
+  const closeUpdateModal = () => {
+    setUpdateModalIsOpen(false)
+  }
+
+  const openDeleteModal = () => {
+    setDeleteModalIsOpen(true)
+  }
+
+  const closeDeleteModal = () => {
+    setDeleteModalIsOpen(false)
   }
 
   const onChange = (e) => {
@@ -106,7 +115,7 @@ function SingleTeam() {
       .unwrap()
       .then(() => {
         refetch()
-        closeModal()
+        closeUpdateModal()
       })
       .catch((error) => toast.error(error.data.message))
   }
@@ -119,11 +128,13 @@ function SingleTeam() {
     )
   }
 
+  console.log(params.teamId)
+
   return (
     <>
       <Modal
-        isOpen={modalIsOpen}
-        onRequestClose={closeModal}
+        isOpen={updateModalIsOpen}
+        onRequestClose={closeUpdateModal}
         contentLabel="Create team"
         className="w-11/12 md:w-9/12 xl:w-3/12 top-1/2 left-1/2 bottom-auto right-auto -translate-y-2/4 -translate-x-2/4 relative inset-y-1/2 rounded-lg bg-base-100 p-6 border border-base-100 overflow-y-auto max-h-75p"
         style={{
@@ -132,7 +143,10 @@ function SingleTeam() {
       >
         <div className="flex justify-between">
           <h2 className="text-2xl font-bold">Update team</h2>
-          <BsXLg className="ml-8 hover:cursor-pointer" onClick={closeModal} />
+          <BsXLg
+            className="ml-8 hover:cursor-pointer"
+            onClick={closeUpdateModal}
+          />
         </div>
         {!isUpdating ? (
           <div>
@@ -163,7 +177,11 @@ function SingleTeam() {
                 <button type="submit" className="btn">
                   Update
                 </button>
-                <button type="button" onClick={closeModal} className="btn">
+                <button
+                  type="button"
+                  onClick={closeUpdateModal}
+                  className="btn"
+                >
                   Go back
                 </button>
               </div>
@@ -173,6 +191,56 @@ function SingleTeam() {
           <Spinner />
         )}
       </Modal>
+
+      <Modal
+        isOpen={deleteModalIsOpen}
+        onRequestClose={closeDeleteModal}
+        contentLabel={`Delete team`}
+        className="w-11/12 md:w-9/12 xl:w-3/12 top-1/2 left-1/2 bottom-auto right-auto -translate-y-2/4 -translate-x-2/4 relative inset-y-1/2 rounded-lg bg-base-100 p-6 border border-base-100 overflow-y-auto max-h-75p"
+        style={{
+          overlay: { backgroundColor: "rgba(0,0,0,0.65)", zIndex: "50" },
+        }}
+      >
+        {!isDeleting ? (
+          <>
+            <div className="flex justify-between">
+              <h2 className="text-2xl font-bold">Delete {team.name}</h2>
+              <BsXLg
+                className="ml-8 hover:cursor-pointer"
+                onClick={closeDeleteModal}
+              />
+            </div>
+            <div>
+              <p>
+                Are you sure you want to delete {team.name}? This will also
+                delete all of its projects.
+              </p>
+              <div className="flex justify-between mt-4">
+                <button
+                  onClick={() =>
+                    deleteTeam({ teamId: params.teamId})
+                      .unwrap()
+                      .then(() => {
+                        closeDeleteModal()
+                        navigate("/teams")
+                      })
+                      .catch((error) => toast.error(error.data.message))
+                  }
+                  className="btn"
+                >
+                  Delete
+                </button>
+                <button onClick={closeDeleteModal} className="btn">
+                  Go back
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <Spinner />
+        )}
+      </Modal>
+
       <main className="container flex flex-wrap pb-4 pt-24">
         <div className="text-xl breadcrumbs pb-6 grow w-screen truncate">
           <ul>
@@ -202,7 +270,7 @@ function SingleTeam() {
                 {team.name}
               </h2>
               <BsPencil
-                onClick={() => openModal()}
+                onClick={() => openUpdateModal()}
                 className="max-w-8 w-full h-8 hover:cursor-pointer"
               />
             </div>
@@ -240,10 +308,7 @@ function SingleTeam() {
             </div>
           </div>
           {leader[0].userId === user.id && (
-            <button
-              
-              className="btn btn-outline mt-10"
-            >
+            <button onClick={openDeleteModal} className="btn btn-outline mt-10">
               Delete team
             </button>
           )}

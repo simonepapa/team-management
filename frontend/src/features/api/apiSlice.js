@@ -72,5 +72,5 @@ export const {
   useGetTeamsQuery,
   useGetTeamQuery,
   useUpdateTeamMutation,
-  useDeleteTeamMutation
+  useDeleteTeamMutation,
 } = apiSlice
