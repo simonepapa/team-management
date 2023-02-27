@@ -55,7 +55,6 @@ export const apiSlice = createApi({
           body,
         }
       },
-      providesTags: ['Team'],
       invalidatesTags: ['Team']
     }),
     deleteTeam: builder.mutation({
@@ -66,7 +65,17 @@ export const apiSlice = createApi({
           method: "DELETE",
         }
       },
-      providesTags: ['Team'],
+      invalidatesTags: ['Team'],
+    }),
+    addTeamMember: builder.mutation({
+      query: (data) => {
+        const { teamId, ...body } = data
+        return {
+          url: `/teams/${teamId}/members`,
+          method: "POST",
+          body
+        }
+      },
       invalidatesTags: ['Team'],
     }),
   }),
@@ -80,4 +89,5 @@ export const {
   useGetTeamQuery,
   useUpdateTeamMutation,
   useDeleteTeamMutation,
+  useAddTeamMemberMutation
 } = apiSlice
