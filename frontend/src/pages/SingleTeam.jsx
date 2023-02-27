@@ -7,6 +7,8 @@ import Spinner from "../components/Spinner"
 import { AgGridReact } from "ag-grid-react"
 import "ag-grid-community/styles/ag-grid.css"
 import "ag-grid-community/styles/ag-theme-alpine.css"
+import Drawer from "react-modern-drawer"
+import "react-modern-drawer/dist/index.css"
 import TeamMember from "../components/TeamMember"
 import {
   useGetTeamQuery,
@@ -22,6 +24,12 @@ function SingleTeam() {
   const [updateModalIsOpen, setUpdateModalIsOpen] = useState(false)
   const [deleteModalIsOpen, setDeleteModalIsOpen] = useState(false)
   const [addMemberModalIsOpen, setAddMemberModalIsOpen] = useState(false)
+  const [drawerIsOpen, setDrawerIsOpen] = useState(false)
+  const [memberData, setMemberData] = useState({
+    name: "",
+    email: "",
+    role: "",
+  })
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [projectRowData, setProjectRowData] = useState([])
@@ -146,6 +154,24 @@ function SingleTeam() {
         closeAddMemberModal()
       })
       .catch((error) => toast.error(error.data.message))
+  }
+
+  const toggleDrawer = () => {
+    setDrawerIsOpen((prevState) => !prevState)
+  }
+
+  const setupDrawer = (name, email, role) => {
+    setMemberData((prevState) => ({
+      name: name,
+      email: email,
+      role: role,
+    }))
+
+    toggleDrawer()
+  }
+
+  const onRoleUpdate = (e) => {
+    e.preventDefault()
   }
 
   if (isLoading) {
@@ -320,6 +346,45 @@ function SingleTeam() {
         )}
       </Modal>
 
+      <Drawer
+        open={drawerIsOpen}
+        onClose={toggleDrawer}
+        direction="right"
+        className="drawer"
+      >
+        <div className="bg-base-100 h-screen p-10">
+          <div className="flex justify-between">
+            <h2 className="text-2xl font-bold">{memberData.name}</h2>
+          </div>
+          <div className="flex items-center mt-5">
+            <h3 className="text-normal font-bold">Email: </h3>
+            <p className="text-normal ml-1">{memberData.email}</p>
+          </div>
+          <div className="flex items-center mt-5">
+            <h3 className="text-normal font-bold mr-1">Role: </h3>
+            {leader[0].userId === user.id ? (
+              <form onSubmit={onRoleUpdate}>
+                <select
+                  id="role"
+                  name="role"
+                  defaultValue={memberData.role}
+                  className="select select-ghost w-fit-content max-w-xs font-normal"
+                >
+                  <option value="Team leader">Team leader</option>
+                  <option value="Co-leader">Co-leader</option>
+                  <option value="Collaborator">Collaborator</option>
+                </select>
+                <button type="submit" className="btn btn-sm btn-outline">
+                  Save
+                </button>
+              </form>
+            ) : (
+              <p className="text-normal">{memberData.role}</p>
+            )}
+          </div>
+        </div>
+      </Drawer>
+
       <main className="container flex flex-wrap pb-4 pt-24">
         <div className="text-xl breadcrumbs pb-6 grow w-screen truncate">
           <ul>
@@ -370,7 +435,13 @@ function SingleTeam() {
               </div>
               {Object.keys(members).length !== 0 &&
                 members.map((member) => (
-                  <TeamMember key={member.id} member={member} />
+                  <TeamMember
+                    onClick={() =>
+                      setupDrawer(member.name, member.email, member.role)
+                    }
+                    key={member.id}
+                    member={member}
+                  />
                 ))}
             </div>
           </div>

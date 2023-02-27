@@ -133,6 +133,10 @@ body {
 .project-table .ag-header-cell-text {
   font-size: 1rem;
 }
+.drawer {
+  width: 30vw !important;
+  max-width: 500px !important;
+}
 
 @media (min-width: 1280px) {
   .sidebar {
