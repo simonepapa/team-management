@@ -11,7 +11,7 @@ import TeamMember from "../components/TeamMember"
 import {
   useGetTeamQuery,
   useUpdateTeamMutation,
-  useDeleteTeamMutation
+  useDeleteTeamMutation,
 } from "../features/api/apiSlice"
 
 Modal.setAppElement("#root")
@@ -20,7 +20,9 @@ function SingleTeam() {
   const gridRef = useRef()
   const [updateModalIsOpen, setUpdateModalIsOpen] = useState(false)
   const [deleteModalIsOpen, setDeleteModalIsOpen] = useState(false)
+  const [addMemberModalIsOpen, setAddMemberModalIsOpen] = useState(false)
   const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
   const [projectRowData, setProjectRowData] = useState([])
 
   const [projectColumns] = useState([
@@ -101,8 +103,23 @@ function SingleTeam() {
     setDeleteModalIsOpen(false)
   }
 
-  const onChange = (e) => {
+  const openAddMemberModal = () => {
+    setAddMemberModalIsOpen(true)
+  }
+
+  const closeAddMemberModal = () => {
+    setAddMemberModalIsOpen(false)
+  }
+
+  const onTeamNameChange = (e) => {
     setName((prevState) => ({
+      ...prevState,
+      [e.target.name]: e.target.value,
+    }))
+  }
+
+  const onAddMemberChange = (e) => {
+    setEmail((prevState) => ({
       ...prevState,
       [e.target.name]: e.target.value,
     }))
@@ -118,6 +135,11 @@ function SingleTeam() {
         closeUpdateModal()
       })
       .catch((error) => toast.error(error.data.message))
+  }
+
+  // Add member
+  const onAddMember = (e) => {
+    e.preventDefault()
   }
 
   if (isLoading) {
@@ -168,7 +190,7 @@ function SingleTeam() {
                   id="teamName"
                   name="teamName"
                   type="text"
-                  onChange={onChange}
+                  onChange={onTeamNameChange}
                   placeholder="Type team name here"
                   className="input input-bordered w-screen max-w-xs"
                 />
@@ -218,7 +240,7 @@ function SingleTeam() {
               <div className="flex justify-between mt-4">
                 <button
                   onClick={() =>
-                    deleteTeam({ teamId: params.teamId})
+                    deleteTeam({ teamId: params.teamId })
                       .unwrap()
                       .then(() => {
                         closeDeleteModal()
@@ -239,6 +261,55 @@ function SingleTeam() {
         ) : (
           <Spinner />
         )}
+      </Modal>
+
+      <Modal
+        isOpen={addMemberModalIsOpen}
+        onRequestClose={closeAddMemberModal}
+        contentLabel="Add member"
+        className="w-11/12 md:w-fit top-1/2 left-1/2 bottom-auto right-auto -translate-y-2/4 -translate-x-2/4 relative inset-y-1/2 rounded-lg bg-base-100 p-6 border border-base-100 overflow-y-auto max-h-75p"
+        style={{
+          overlay: { backgroundColor: "rgba(0,0,0,0.65)", zIndex: "50" },
+        }}
+      >
+        <div className="flex justify-between">
+          <h2 className="text-2xl font-bold">New member</h2>
+          <BsXLg
+            className="ml-8 hover:cursor-pointer"
+            onClick={closeAddMemberModal}
+          />
+        </div>
+        <div>
+          <form
+            onSubmit={onAddMember}
+            className="flex flex-col items-center mt-2"
+          >
+            <div className="flex flex-col w-screen max-w-xs">
+              <p className="text-normal mb-1">Email</p>
+              <input
+                onChange={onAddMemberChange}
+                required
+                id="memberEmail"
+                name="memberEmail"
+                type="email"
+                placeholder="Type member email here"
+                className="input input-bordered w-screen max-w-xs"
+              />
+            </div>
+            <div className="w-full flex justify-between mt-8">
+              <button type="submit" className="btn">
+                Add
+              </button>
+              <button
+                type="button"
+                onClick={closeAddMemberModal}
+                className="btn"
+              >
+                Go back
+              </button>
+            </div>
+          </form>
+        </div>
       </Modal>
 
       <main className="container flex flex-wrap pb-4 pt-24">
@@ -278,7 +349,10 @@ function SingleTeam() {
           <div className="flex flex-col mt-4">
             <h3 className="text-xl font-bold mb-4">Teammates</h3>
             <div className="flex flex-wrap hover:cursor-pointer">
-              <div className="flex items-center mr-6 mb-2 w-36">
+              <div
+                onClick={() => openAddMemberModal()}
+                className="flex items-center mr-6 mb-2 w-36"
+              >
                 <div className="flex items-center justify-center bg-base-300 rounded-full w-9 h-9 mr-1">
                   <BsPlusCircle className="w-7 h-7" />
                 </div>
