@@ -1,14 +1,32 @@
-import { useState, useEffect } from "react"
-import { Link, useParams } from "react-router-dom"
+import { useState, useEffect, useRef, useCallback } from "react"
+import { Link, useParams, useNavigate } from "react-router-dom"
 import Modal from "react-modal"
 import { toast } from "react-toastify"
 import { BsPlusCircle, BsPencil } from "react-icons/bs"
 import Spinner from "../components/Spinner"
+import { AgGridReact } from "ag-grid-react"
+import "ag-grid-community/styles/ag-grid.css"
+import "ag-grid-community/styles/ag-theme-alpine.css"
 import TeamMember from "../components/TeamMember"
 import { useGetTeamQuery } from "../features/api/apiSlice"
 
 function SingleTeam() {
+  const gridRef = useRef()
+  const [projectRowData, setProjectRowData] = useState([])
+
+  const [projectColumns] = useState([
+    { field: "name", sortable: true, resizable: true, maxWidth: 466 },
+    { field: "status", sortable: true, resizable: false, width: 120 },
+    { field: "dueDate", sortable: true, resizable: false, width: 150 },
+  ])
+
+  const defaultColDef = {
+    sortable: true,
+    resizable: true,
+  }
+
   const params = useParams()
+  const navigate = useNavigate()
 
   const {
     data: teamObject = [],
@@ -25,6 +43,34 @@ function SingleTeam() {
     }
   }, [isError, message])
 
+  useEffect(() => {
+    if (!isLoading) {
+      if (projectRowData.length === 0) {
+        Object.keys(projects).length !== 0 &&
+          projects.map((project) => {
+            setProjectRowData((current) => [
+              ...current,
+              {
+                id: project.id,
+                name: project.name,
+                status: project.status,
+                dueDate: new Date(project.dueDate).toLocaleDateString("en-EN", {
+                  day: "numeric",
+                  month: "short",
+                }),
+              },
+            ])
+          })
+      } else {
+        setProjectRowData([])
+      }
+    }
+  }, [isLoading])
+
+  const projectRedirect = (e) => {
+    navigate(`/projects/${e.data.id}`)
+  }
+
   if (isLoading) {
     return (
       <div className="fullscreen-spinner">
@@ -32,8 +78,6 @@ function SingleTeam() {
       </div>
     )
   }
-
-  console.log(members)
 
   return (
     <>
@@ -81,15 +125,24 @@ function SingleTeam() {
               </div>
               {Object.keys(members).length !== 0 &&
                 members.map((member) => (
-                  <TeamMember
-                    key={member.id}
-                    member={member}
-                  />
+                  <TeamMember key={member.id} member={member} />
                 ))}
             </div>
           </div>
           <div className="flex flex-col mt-4">
             <h3 className="text-xl font-bold mb-4">Projects</h3>
+            <div
+              className="ag-theme-alpine-dark project-table"
+              style={{ height: 400 }}
+            >
+              <AgGridReact
+                ref={gridRef}
+                defaultColDef={defaultColDef}
+                rowData={projectRowData}
+                columnDefs={projectColumns}
+                onCellClicked={projectRedirect}
+              ></AgGridReact>
+            </div>
           </div>
         </section>
       </main>

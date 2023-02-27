@@ -116,6 +116,24 @@ body {
   background-color: transparent;
 }
 
+.project-table {
+  font-family: 'Roboto', sans-serif;
+  max-width: 750px;
+  width: 100%;
+}
+.project-table .ag-header {
+  background-color: rgb(32, 37, 46);
+}
+.project-table .ag-row-even {
+  background-color: rgb(42, 48, 60);
+}
+.project-table .ag-row-odd {
+  background-color: rgb(32, 37, 46);
+}
+.project-table .ag-header-cell-text {
+  font-size: 1rem;
+}
+
 @media (min-width: 1280px) {
   .sidebar {
     position: fixed;

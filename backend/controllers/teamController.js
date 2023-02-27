@@ -77,7 +77,7 @@ const getTeam = asyncHandler(async (req, res) => {
 
   // Get all team's projects name, description, status and dueDate
   const [projects] = await db.execute(
-    `SELECT DISTINCT p.name, p.description, p.status, p.dueDate
+    `SELECT DISTINCT p.id, p.name, p.description, p.status, p.dueDate
       FROM projects p
     INNER JOIN teams_projects tp
       ON p.id = tp.projectId
