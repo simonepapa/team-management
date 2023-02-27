@@ -272,6 +272,17 @@ const updateMember = asyncHandler(async (req, res) => {
   res.status(201).json("Role updated")
 })
 
+// @desc    Get team leader
+// @route   GET /api/teams/:id/leader
+// @access  Private
+const getLeader = asyncHandler(async (req, res) => {
+  const [leader] = await db.execute(
+    `SELECT DISTINCT userId FROM users_teams WHERE role = 'Team leader'`
+  )
+
+  res.status(200).json(leader)
+})
+
 module.exports = {
   createTeam,
   getTeams,
@@ -281,4 +292,5 @@ module.exports = {
   addMember,
   removeMember,
   updateMember,
+  getLeader
 }
