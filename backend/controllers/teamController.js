@@ -86,8 +86,13 @@ const getTeam = asyncHandler(async (req, res) => {
     WHERE t.id = ${req.params.id}`
   )
 
+  // Get team leader
+  const [leader] = await db.execute(
+    `SELECT DISTINCT userId FROM users_teams WHERE role = 'Team leader' AND teamId = ${req.params.id}`
+  )
+
   // Return an object that contains both the team info, the users list and the projects list
-  res.status(200).json({ team: team[0], users, projects })
+  res.status(200).json({ team: team[0], users, projects, leader })
 })
 
 // @desc    Delete team
@@ -272,17 +277,6 @@ const updateMember = asyncHandler(async (req, res) => {
   res.status(201).json("Role updated")
 })
 
-// @desc    Get team leader
-// @route   GET /api/teams/:id/leader
-// @access  Private
-const getLeader = asyncHandler(async (req, res) => {
-  const [leader] = await db.execute(
-    `SELECT DISTINCT userId FROM users_teams WHERE role = 'Team leader'`
-  )
-
-  res.status(200).json(leader)
-})
-
 module.exports = {
   createTeam,
   getTeams,
@@ -292,5 +286,4 @@ module.exports = {
   addMember,
   removeMember,
   updateMember,
-  getLeader
 }
