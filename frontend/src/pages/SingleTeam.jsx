@@ -35,6 +35,10 @@ function SingleTeam() {
   const params = useParams()
   const navigate = useNavigate()
 
+  const user = JSON.parse(localStorage.getItem("user"))
+
+  console.log(user)
+
   const {
     data: teamObject = [],
     isLoading,
@@ -44,7 +48,7 @@ function SingleTeam() {
   } = useGetTeamQuery(params.teamId)
   const [updateTeam, { isUpdating }] = useUpdateTeamMutation()
 
-  const { team, projects, users: members } = teamObject
+  const { team, projects, users: members, leader } = teamObject
 
   useEffect(() => {
     if (isError) {
@@ -235,6 +239,14 @@ function SingleTeam() {
               ></AgGridReact>
             </div>
           </div>
+          {leader[0].userId === user.id && (
+            <button
+              
+              className="btn btn-outline mt-10"
+            >
+              Delete team
+            </button>
+          )}
         </section>
       </main>
     </>
