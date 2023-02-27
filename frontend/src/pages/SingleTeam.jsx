@@ -4,6 +4,7 @@ import Modal from "react-modal"
 import { toast } from "react-toastify"
 import { BsPlusCircle, BsPencil } from "react-icons/bs"
 import Spinner from "../components/Spinner"
+import TeamMember from "../components/TeamMember"
 import { useGetTeamQuery } from "../features/api/apiSlice"
 
 function SingleTeam() {
@@ -70,9 +71,7 @@ function SingleTeam() {
           <div className="flex flex-col mt-4">
             <h3 className="text-xl font-bold mb-4">Teammates</h3>
             <div className="flex flex-wrap hover:cursor-pointer">
-              <div
-                className="flex items-center mr-6 mb-2 w-36"
-              >
+              <div className="flex items-center mr-6 mb-2 w-36">
                 <div className="flex items-center justify-center bg-base-300 rounded-full w-9 h-9 mr-1">
                   <BsPlusCircle className="w-7 h-7" />
                 </div>
@@ -80,6 +79,13 @@ function SingleTeam() {
                   <p className="text-normal font-bold">New member</p>
                 </div>
               </div>
+              {Object.keys(members).length !== 0 &&
+                members.map((member) => (
+                  <TeamMember
+                    key={member.id}
+                    member={member}
+                  />
+                ))}
             </div>
           </div>
           <div className="flex flex-col mt-4">

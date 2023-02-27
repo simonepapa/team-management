@@ -68,7 +68,7 @@ const getTeam = asyncHandler(async (req, res) => {
 
   // Get all team's members name and their role in the team
   const [users] = await db.execute(
-    `SELECT DISTINCT u.name, ut.role
+    `SELECT DISTINCT u.id, u.email, u.name, ut.role
       FROM users_teams ut
     INNER JOIN users u
       ON u.id = ut.userId
