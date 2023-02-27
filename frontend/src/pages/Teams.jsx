@@ -152,7 +152,7 @@ function Teams() {
                     <Card
                       image="https://picsum.photos/200/300"
                       title={team.name && team.name}
-                      teammates={5}
+                      teammates={team.members}
                     />
                   </Link>
                 ))}
