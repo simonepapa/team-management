@@ -33,10 +33,13 @@ const createTeam = asyncHandler(async (req, res) => {
 // @access  Private
 const getTeams = asyncHandler(async (req, res) => {
   const [teams] = await db.execute(
-    `SELECT DISTINCT id, name
-      FROM teams
-    INNER JOIN users_teams
-      ON '${req.user.id}' = users_teams.userId`
+    `SELECT DISTINCT teamId as id, name, COUNT(userId) as members
+      FROM users_teams
+    INNER JOIN teams
+      ON teamId = id
+    WHERE 
+      teamId IN (SELECT DISTINCT teamId FROM users_teams WHERE '${req.user.id}' = userId)
+    GROUP BY teamId, name`
   )
 
   res.status(200).json(teams)
