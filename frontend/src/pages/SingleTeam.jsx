@@ -15,7 +15,8 @@ import {
   useUpdateTeamMutation,
   useDeleteTeamMutation,
   useAddTeamMemberMutation,
-  useUpdateTeamMemberMutation
+  useUpdateTeamMemberMutation,
+  useRemoveTeamMemberMutation,
 } from "../features/api/apiSlice"
 
 Modal.setAppElement("#root")
@@ -33,6 +34,7 @@ function SingleTeam() {
   })
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
+  const [confirmRemove, setConfirmRemove] = useState(false)
   const [projectRowData, setProjectRowData] = useState([])
 
   const [projectColumns] = useState([
@@ -60,7 +62,8 @@ function SingleTeam() {
   const [updateTeam, { isUpdatingTeam }] = useUpdateTeamMutation()
   const [deleteTeam, { isDeleting }] = useDeleteTeamMutation()
   const [addMember, { isAdding }] = useAddTeamMemberMutation()
-  const [updateMember, { isUpdatingMember }] = useUpdateTeamMemberMutation()
+  const [updateMember] = useUpdateTeamMemberMutation()
+  const [removeMember] = useRemoveTeamMemberMutation()
 
   const { team, projects, users: members, leader } = teamObject
 
@@ -163,11 +166,12 @@ function SingleTeam() {
   }
 
   const setupDrawer = (name, email, role) => {
-    setMemberData((prevState) => ({
+    setMemberData(() => ({
       name: name,
       email: email,
       role: role,
     }))
+    setConfirmRemove(false)
 
     toggleDrawer()
   }
@@ -175,7 +179,24 @@ function SingleTeam() {
   const onRoleUpdate = (e) => {
     e.preventDefault()
     const newRole = document.getElementById("memberRole")
-    updateMember({ teamId: params.teamId, email: memberData.email, role: newRole.value })
+    updateMember({
+      teamId: params.teamId,
+      email: memberData.email,
+      role: newRole.value,
+    })
+      .unwrap()
+      .then(() => {
+        toggleDrawer()
+      })
+      .catch((error) => toast.error(error.data.message))
+  }
+
+  const onRemove = (e) => {
+    e.preventDefault()
+    removeMember({
+      teamId: params.teamId,
+      email: memberData.email,
+    })
       .unwrap()
       .then(() => {
         toggleDrawer()
@@ -364,6 +385,7 @@ function SingleTeam() {
         <div className="bg-base-100 h-screen p-10">
           <div className="flex justify-between">
             <h2 className="text-2xl font-bold">{memberData.name}</h2>
+            <BsXLg className="hover:cursor-pointer" onClick={toggleDrawer} />
           </div>
           <div className="flex items-center mt-5">
             <h3 className="text-normal font-bold">Email: </h3>
@@ -391,6 +413,35 @@ function SingleTeam() {
               <p className="text-normal">{memberData.role}</p>
             )}
           </div>
+          {leader[0].userId === user.id && !confirmRemove && (
+            <button
+              onClick={() => setConfirmRemove(true)}
+              className="btn btn-outline mt-10"
+            >
+              Remove from team
+            </button>
+          )}
+          {leader[0].userId === user.id && confirmRemove && (
+            <div className="mt-4">
+              <p>
+                Are you sure you want to remove {memberData.name} from the team?
+              </p>
+              <div className="flex justify-between mt-4">
+                <form onSubmit={onRemove}>
+                  <button type="submit" className="btn">
+                    Remove member
+                  </button>
+                </form>
+                <button
+                  type="button"
+                  onClick={() => setConfirmRemove(false)}
+                  className="btn"
+                >
+                  Go back
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </Drawer>
 
