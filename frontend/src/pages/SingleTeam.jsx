@@ -8,7 +8,7 @@ import { AgGridReact } from "ag-grid-react"
 import "ag-grid-community/styles/ag-grid.css"
 import "ag-grid-community/styles/ag-theme-alpine.css"
 import TeamMember from "../components/TeamMember"
-import { useGetTeamQuery } from "../features/api/apiSlice"
+import { useGetTeamQuery, useUpdateTeamMutation } from "../features/api/apiSlice"
 
 Modal.setAppElement("#root")
 

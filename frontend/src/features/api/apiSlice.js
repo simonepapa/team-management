@@ -42,7 +42,14 @@ export const apiSlice = createApi({
     }),
     getTeam: builder.query({
       query: (teamId) => `/teams/${teamId}`
-    })
+    }),
+    updateTeam: builder.mutation({
+      query: (payload, teamId) => ({
+        url: `/teams/${teamId}`,
+        method: "PUT",
+        body: payload,
+      }),
+    }),
   }),
 })
 
@@ -51,5 +58,6 @@ export const {
   useLoginMutation,
   useCreateTeamMutation,
   useGetTeamsQuery,
-  useGetTeamQuery
+  useGetTeamQuery,
+  useUpdateTeamMutation,
 } = apiSlice
