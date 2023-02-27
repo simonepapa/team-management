@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Link, useParams, useNavigate } from "react-router-dom"
 import Modal from "react-modal"
 import { toast } from "react-toastify"
-import { BsPlusCircle, BsPencil } from "react-icons/bs"
+import { BsPlusCircle, BsPencil, BsXLg } from "react-icons/bs"
 import Spinner from "../components/Spinner"
 import { AgGridReact } from "ag-grid-react"
 import "ag-grid-community/styles/ag-grid.css"
@@ -10,8 +10,12 @@ import "ag-grid-community/styles/ag-theme-alpine.css"
 import TeamMember from "../components/TeamMember"
 import { useGetTeamQuery } from "../features/api/apiSlice"
 
+Modal.setAppElement("#root")
+
 function SingleTeam() {
   const gridRef = useRef()
+  const [modalIsOpen, setModalIsOpen] = useState(false)
+  const [name, setName] = useState("")
   const [projectRowData, setProjectRowData] = useState([])
 
   const [projectColumns] = useState([
@@ -71,6 +75,28 @@ function SingleTeam() {
     navigate(`/projects/${e.data.id}`)
   }
 
+  const openModal = () => {
+    setModalIsOpen(true)
+  }
+
+  const closeModal = () => {
+    setModalIsOpen(false)
+  }
+
+  const onChange = (e) => {
+    setName((prevState) => ({
+      ...prevState,
+      [e.target.name]: e.target.value,
+    }))
+  }
+
+  // Update project info
+  const onUpdate = (e) => {
+    e.preventDefault()
+
+    closeModal()
+  }
+
   if (isLoading) {
     return (
       <div className="fullscreen-spinner">
@@ -81,6 +107,51 @@ function SingleTeam() {
 
   return (
     <>
+      <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={closeModal}
+        contentLabel="Create team"
+        className="w-11/12 md:w-9/12 xl:w-3/12 top-1/2 left-1/2 bottom-auto right-auto -translate-y-2/4 -translate-x-2/4 relative inset-y-1/2 rounded-lg bg-base-100 p-6 border border-base-100 overflow-y-auto max-h-75p"
+        style={{
+          overlay: { backgroundColor: "rgba(0,0,0,0.65)", zIndex: "50" },
+        }}
+      >
+        <div className="flex justify-between">
+          <h2 className="text-2xl font-bold">Update team</h2>
+          <BsXLg className="ml-8 hover:cursor-pointer" onClick={closeModal} />
+        </div>
+        <div>
+          <form onSubmit={onUpdate} className="flex flex-col items-center mt-2">
+            <div className="flex flex-col w-screen max-w-xs">
+              <p className="text-normal mb-1">Team image</p>
+              <input
+                type="file"
+                className="file-input file-input-bordered file-input-xs w-full max-w-xs"
+              />
+            </div>
+            <div className="flex flex-col w-screen max-w-xs mt-3">
+              <p className="text-normal mb-1">Team name</p>
+              <input
+                required
+                id="teamName"
+                name="teamName"
+                type="text"
+                onChange={onChange}
+                placeholder="Type team name here"
+                className="input input-bordered w-screen max-w-xs"
+              />
+            </div>
+            <div className="w-full flex justify-between mt-8">
+              <button type="submit" className="btn">
+                Update
+              </button>
+              <button type="button" onClick={closeModal} className="btn">
+                Go back
+              </button>
+            </div>
+          </form>
+        </div>
+      </Modal>
       <main className="container flex flex-wrap pb-4 pt-24">
         <div className="text-xl breadcrumbs pb-6 grow w-screen truncate">
           <ul>
@@ -109,7 +180,10 @@ function SingleTeam() {
               <h2 className="text-2xl text-base-content uppercase font-bold ml-4 mr-3 max-w-75p">
                 {team.name}
               </h2>
-              <BsPencil className="max-w-8 w-full h-8 hover:cursor-pointer" />
+              <BsPencil
+                onClick={() => setModalIsOpen(true)}
+                className="max-w-8 w-full h-8 hover:cursor-pointer"
+              />
             </div>
           </div>
           <div className="flex flex-col mt-4">
