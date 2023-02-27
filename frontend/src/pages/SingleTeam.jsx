@@ -15,6 +15,7 @@ import {
   useUpdateTeamMutation,
   useDeleteTeamMutation,
   useAddTeamMemberMutation,
+  useUpdateTeamMemberMutation
 } from "../features/api/apiSlice"
 
 Modal.setAppElement("#root")
@@ -56,9 +57,10 @@ function SingleTeam() {
     isError,
     message,
   } = useGetTeamQuery(params.teamId)
-  const [updateTeam, { isUpdating }] = useUpdateTeamMutation()
+  const [updateTeam, { isUpdatingTeam }] = useUpdateTeamMutation()
   const [deleteTeam, { isDeleting }] = useDeleteTeamMutation()
   const [addMember, { isAdding }] = useAddTeamMemberMutation()
+  const [updateMember, { isUpdatingMember }] = useUpdateTeamMemberMutation()
 
   const { team, projects, users: members, leader } = teamObject
 
@@ -172,6 +174,13 @@ function SingleTeam() {
 
   const onRoleUpdate = (e) => {
     e.preventDefault()
+    const newRole = document.getElementById("memberRole")
+    updateMember({ teamId: params.teamId, email: memberData.email, role: newRole.value })
+      .unwrap()
+      .then(() => {
+        toggleDrawer()
+      })
+      .catch((error) => toast.error(error.data.message))
   }
 
   if (isLoading) {
@@ -200,7 +209,7 @@ function SingleTeam() {
             onClick={closeUpdateModal}
           />
         </div>
-        {!isUpdating ? (
+        {!isUpdatingTeam ? (
           <div>
             <form
               onSubmit={onUpdate}
@@ -365,8 +374,8 @@ function SingleTeam() {
             {leader[0].userId === user.id ? (
               <form onSubmit={onRoleUpdate}>
                 <select
-                  id="role"
-                  name="role"
+                  id="memberRole"
+                  name="memberRole"
                   defaultValue={memberData.role}
                   className="select select-ghost w-fit-content max-w-xs font-normal"
                 >
