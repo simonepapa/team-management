@@ -16,7 +16,7 @@ function Teams() {
   const [modalIsOpen, setModalIsOpen] = useState(false)
   const [name, setName] = useState("")
 
-  const { data: teams = [], isLoading, isError, message } = useGetTeamsQuery()
+  const { data: teams = [], isLoading, isFetching, isError, message } = useGetTeamsQuery()
   const [createTeam, { isCreating }] = useCreateTeamMutation()
 
   const navigate = useNavigate()
@@ -53,7 +53,7 @@ function Teams() {
       .catch((error) => toast.error(error.data.message))
   }
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return (
       <div className="fullscreen-spinner">
         <Spinner />

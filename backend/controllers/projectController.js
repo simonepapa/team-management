@@ -50,10 +50,13 @@ const createProject = asyncHandler(async (req, res) => {
 // @access  Private
 const getProjects = asyncHandler(async (req, res) => {
   const [projects] = await db.execute(
-    `SELECT DISTINCT id, description, dueDate, name
-      FROM projects
-    INNER JOIN users_projects
-      ON '${req.user.id}' = users_projects.userId`
+    `SELECT DISTINCT projectId as id, name, status, description, dueDate, COUNT(userId) as members
+      FROM users_projects
+    INNER JOIN projects
+      ON projectId = id
+    WHERE 
+      projectId IN (SELECT DISTINCT projectId FROM users_projects WHERE '${req.user.id}' = userId)
+    GROUP BY projectId, name, status, description, dueDate`
   )
 
   res.status(200).json(projects)

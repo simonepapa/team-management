@@ -56,6 +56,7 @@ function SingleTeam() {
   const {
     data: teamObject = [],
     isLoading,
+    isFetching,
     isError,
     message,
   } = useGetTeamQuery(params.teamId)
@@ -204,7 +205,7 @@ function SingleTeam() {
       .catch((error) => toast.error(error.data.message))
   }
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return (
       <div className="fullscreen-spinner">
         <Spinner />
