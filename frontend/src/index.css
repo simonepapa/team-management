@@ -121,17 +121,25 @@ body {
   max-width: 750px;
   width: 100%;
 }
-.project-table .ag-header {
+.ag-header {
   background-color: rgb(32, 37, 46);
 }
-.project-table .ag-row-even {
+.ag-row-even {
   background-color: rgb(42, 48, 60);
 }
-.project-table .ag-row-odd {
+.ag-row-odd {
   background-color: rgb(32, 37, 46);
 }
 .project-table .ag-header-cell-text {
   font-size: 1rem;
+}
+.user-project-table {
+  font-family: 'Roboto', sans-serif;
+  max-width: 500px;
+  width: 100%;
+}
+.user-project-table .ag-header-cell-text {
+  font-size: 0.75rem;
 }
 .drawer {
   width: 30vw !important;

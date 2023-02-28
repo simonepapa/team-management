@@ -94,8 +94,24 @@ const getUserTeamsLeader = asyncHandler(async (req, res) => {
   res.status(200).json(teams)
 })
 
+// @desc    Get user's projects
+// @route   /api/users/:id/projects
+// @access  Private
+const getUserProjects = asyncHandler(async (req, res) => {
+  const [projects] = await db.execute(
+    `SELECT DISTINCT p.name, p.status, p.dueDate
+      FROM projects p
+    INNER JOIN users_projects up
+      ON p.id = up.projectId
+    WHERE up.userId = ${req.params.id}`
+  )
+
+  res.status(200).json(projects)
+})
+
 module.exports = {
   registerUser,
   loginUser,
-  getUserTeamsLeader
+  getUserTeamsLeader,
+  getUserProjects
 }

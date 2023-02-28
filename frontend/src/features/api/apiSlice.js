@@ -175,6 +175,10 @@ export const apiSlice = createApi({
       },
       invalidatesTags: ['Project'],
     }),
+    getUserProjects: builder.query({
+      query: (userId) => `/users/${userId}/projects`,
+      providesTags: ['Project'],
+    }),
   }),
 })
 
@@ -198,4 +202,5 @@ export const {
   useAddProjectMemberMutation,
   useUpdateProjectMemberMutation,
   useRemoveProjectMemberMutation,
+  useGetUserProjectsQuery
 } = apiSlice

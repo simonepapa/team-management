@@ -17,6 +17,7 @@ import {
   useAddTeamMemberMutation,
   useUpdateTeamMemberMutation,
   useRemoveTeamMemberMutation,
+  useGetUserProjectsQuery,
 } from "../features/api/apiSlice"
 
 Modal.setAppElement("#root")
@@ -28,24 +29,31 @@ function SingleTeam() {
   const [addMemberModalIsOpen, setAddMemberModalIsOpen] = useState(false)
   const [drawerIsOpen, setDrawerIsOpen] = useState(false)
   const [memberData, setMemberData] = useState({
+    id: -1,
     name: "",
     email: "",
     role: "",
   })
+  const [skip, setSkip] = useState(true)
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [confirmRemove, setConfirmRemove] = useState(false)
   const [projectRowData, setProjectRowData] = useState([])
+  const [userProjectRowData, setUserProjectRowData] = useState([])
 
   const [projectColumns] = useState([
     { field: "name", sortable: true, resizable: true, maxWidth: 466 },
     { field: "status", sortable: true, resizable: false, width: 120 },
     { field: "dueDate", sortable: true, resizable: false, width: 150 },
   ])
+  const [userProjectColumns] = useState([
+    { field: "name", sortable: true, resizable: true, width: 148 },
+    { field: "status", sortable: true, resizable: false, width: 120 },
+    { field: "dueDate", sortable: true, resizable: false, width: 150 },
+  ])
 
   const defaultColDef = {
-    sortable: true,
-    resizable: true,
+    suppressMovable: true,
   }
 
   const params = useParams()
@@ -65,6 +73,12 @@ function SingleTeam() {
   const [addMember, { isAdding }] = useAddTeamMemberMutation()
   const [updateMember] = useUpdateTeamMemberMutation()
   const [removeMember] = useRemoveTeamMemberMutation()
+  const {
+    data: userProjects,
+    isLoadingUserProjects,
+    isFetchingUserProjects,
+    isErrorUserProjects,
+  } = useGetUserProjectsQuery(memberData.id, { skip })
 
   const { team, projects, users: members, leader } = teamObject
 
@@ -75,7 +89,7 @@ function SingleTeam() {
   }, [isError, message])
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && !isFetching) {
       if (projectRowData.length === 0) {
         Object.keys(projects).length !== 0 &&
           projects.map((project) => {
@@ -97,6 +111,30 @@ function SingleTeam() {
       }
     }
   }, [isLoading])
+
+  useEffect(() => {
+    if (!isLoadingUserProjects && !isFetchingUserProjects) {
+      if (userProjectRowData.length === 0) {
+        userProjects !== undefined &&
+          userProjects.map((project) => {
+            setUserProjectRowData((current) => [
+              ...current,
+              {
+                id: project.id,
+                name: project.name,
+                status: project.status,
+                dueDate: new Date(project.dueDate).toLocaleDateString("en-EN", {
+                  day: "numeric",
+                  month: "short",
+                }),
+              },
+            ])
+          })
+      } else {
+        setUserProjectRowData([])
+      }
+    }
+  }, [userProjects])
 
   const projectRedirect = (e) => {
     navigate(`/projects/${e.data.id}`)
@@ -166,12 +204,14 @@ function SingleTeam() {
     setDrawerIsOpen((prevState) => !prevState)
   }
 
-  const setupDrawer = (name, email, role) => {
+  const setupDrawer = (id, name, email, role) => {
     setMemberData(() => ({
+      id: id,
       name: name,
       email: email,
       role: role,
     }))
+    setSkip(false)
     setConfirmRemove(false)
 
     toggleDrawer()
@@ -414,6 +454,22 @@ function SingleTeam() {
               <p className="text-normal">{memberData.role}</p>
             )}
           </div>
+          <h3 className="text-normal font-bold mt-4 mb-1">Projects</h3>
+          {!isLoadingUserProjects && !isFetchingUserProjects ? (
+            <div
+              className="ag-theme-alpine-dark user-project-table"
+              style={{ height: 400 }}
+            >
+              <AgGridReact
+                ref={gridRef}
+                defaultColDef={defaultColDef}
+                rowData={userProjectRowData}
+                columnDefs={userProjectColumns}
+              ></AgGridReact>
+            </div>
+          ) : (
+            <Spinner />
+          )}
           {leader[0].userId === user.id && !confirmRemove && (
             <button
               onClick={() => setConfirmRemove(true)}
@@ -498,7 +554,12 @@ function SingleTeam() {
                 members.map((member) => (
                   <TeamMember
                     onClick={() =>
-                      setupDrawer(member.name, member.email, member.role)
+                      setupDrawer(
+                        member.id,
+                        member.name,
+                        member.email,
+                        member.role
+                      )
                     }
                     key={member.id}
                     member={member}
