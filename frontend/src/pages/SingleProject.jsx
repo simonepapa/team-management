@@ -118,6 +118,19 @@ function SingleProject() {
     toggleDrawer()
   }
 
+  const onRemove = (e) => {
+    e.preventDefault()
+    removeMember({
+      projectId: params.projectId,
+      email: memberData.email,
+    })
+      .unwrap()
+      .then(() => {
+        toggleDrawer()
+      })
+      .catch((error) => toast.error(error.data.message))
+  }
+
   if (isLoading || isFetching) {
     return (
       <div className="fullscreen-spinner">
@@ -233,7 +246,7 @@ function SingleProject() {
                 project?
               </p>
               <div className="flex justify-between mt-4">
-                <form>
+                <form onSubmit={onRemove}>
                   <button type="submit" className="btn">
                     Remove member
                   </button>
