@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from "react-router-dom"
 import Modal from "react-modal"
 import { toast } from "react-toastify"
 import { BsPlusCircle, BsPencil, BsXLg } from "react-icons/bs"
+import DatePicker from "react-multi-date-picker"
 import Spinner from "../components/Spinner"
 import { AgGridReact } from "ag-grid-react"
 import "ag-grid-community/styles/ag-grid.css"
@@ -22,6 +23,7 @@ import {
 Modal.setAppElement("#root")
 
 function SingleProject() {
+  const [dueDate, setDueDate] = useState()
   const [updateModalIsOpen, setUpdateModalIsOpen] = useState(false)
   const [deleteModalIsOpen, setDeleteModalIsOpen] = useState(false)
   const [addMemberModalIsOpen, setAddMemberModalIsOpen] = useState(false)
@@ -31,9 +33,15 @@ function SingleProject() {
     email: "",
     role: "",
   })
-  const [name, setName] = useState("")
+  const [projectData, setProjectData] = useState({
+    projectName: "",
+    projectDescription: "",
+    projectStatus: "",
+  })
   const [email, setEmail] = useState("")
   const [confirmRemove, setConfirmRemove] = useState(false)
+
+  console.log(projectData)
 
   const params = useParams()
   const navigate = useNavigate()
@@ -85,11 +93,35 @@ function SingleProject() {
     setAddMemberModalIsOpen(false)
   }
 
+  const onUpdateChange = (e) => {
+    setProjectData((prevState) => ({
+      ...prevState,
+      [e.target.name]: e.target.value,
+    }))
+  }
+
   const onAddMemberChange = (e) => {
     setEmail((prevState) => ({
       ...prevState,
       [e.target.name]: e.target.value,
     }))
+  }
+
+  // Update project info
+  const onUpdate = (e) => {
+    e.preventDefault()
+    updateProject({
+      projectId: params.projectId,
+      name: projectData.projectName,
+      status: projectData.projectStatus,
+      dueDate: dueDate,
+      description: projectData.projectDescription,
+    })
+      .unwrap()
+      .then(() => {
+        closeUpdateModal()
+      })
+      .catch((error) => toast.error(error.data.message))
   }
 
   // Add member
@@ -157,6 +189,100 @@ function SingleProject() {
   return (
     <>
       <Modal
+        isOpen={updateModalIsOpen}
+        onRequestClose={closeUpdateModal}
+        contentLabel="Create project"
+        className="w-11/12 md:w-9/12 xl:w-3/12 top-1/2 left-1/2 bottom-auto right-auto -translate-y-2/4 -translate-x-2/4 relative inset-y-1/2 rounded-lg bg-base-100 p-6 border border-base-100 overflow-y-auto max-h-75p"
+        style={{
+          overlay: { backgroundColor: "rgba(0,0,0,0.65)", zIndex: "50" },
+        }}
+      >
+        <div className="flex justify-between">
+          <h2 className="text-2xl font-bold">Update project</h2>
+          <BsXLg
+            className="ml-8 hover:cursor-pointer"
+            onClick={closeUpdateModal}
+          />
+        </div>
+        {!isUpdatingProject ? (
+          <div>
+            <form
+              onSubmit={onUpdate}
+              className="flex flex-col items-center mt-2"
+            >
+              <div className="flex flex-col w-screen max-w-xs">
+                <p className="text-normal mb-1">Project image</p>
+                <input
+                  type="file"
+                  className="file-input file-input-bordered file-input-xs w-full max-w-xs"
+                />
+              </div>
+              <div className="flex flex-col w-screen max-w-xs mt-3">
+                <p className="text-normal mb-1">Project name</p>
+                <input
+                  id="projectName"
+                  name="projectName"
+                  type="text"
+                  onChange={onUpdateChange}
+                  placeholder="Type project name here"
+                  className="input input-bordered w-screen max-w-xs"
+                />
+              </div>
+              <div className="flex flex-col w-screen max-w-xs mt-3">
+                <p className="text-normal mb-1">Project status</p>
+                <select
+                  onChange={onUpdateChange}
+                  id="projectStatus"
+                  name="projectStatus"
+                  defaultValue={project.status}
+                  className="select select-bordered font-normal w-32"
+                >
+                  <option value="On track">On track</option>
+                  <option value="Late">Late</option>
+                  <option value="Off track">Off track</option>
+                </select>
+              </div>
+              <div className="flex flex-col w-screen max-w-xs mt-3">
+                <p className="text-normal mb-1">Project description</p>
+                <textarea
+                  onChange={onUpdateChange}
+                  id="projectDescription"
+                  name="projectDescription"
+                  placeholder="Type project description here"
+                  className="textarea textarea-bordered w-screen max-w-xs"
+                ></textarea>
+              </div>
+              <div className="flex flex-col w-screen max-w-xs mt-3">
+                <p className="text-normal mb-1">Due date</p>
+                <DatePicker
+                  id="dueDate"
+                  name="dueDate"
+                  inputClass="input input-bordered w-screen max-w-xs"
+                  value={""}
+                  onChange={setDueDate}
+                  placeholder="Select project due date here"
+                />
+              </div>
+              <div className="w-full flex justify-between mt-8">
+                <button type="submit" className="btn">
+                  Update
+                </button>
+                <button
+                  type="button"
+                  onClick={closeUpdateModal}
+                  className="btn"
+                >
+                  Go back
+                </button>
+              </div>
+            </form>
+          </div>
+        ) : (
+          <Spinner />
+        )}
+      </Modal>
+
+      <Modal
         isOpen={deleteModalIsOpen}
         onRequestClose={closeDeleteModal}
         contentLabel={`Delete project`}
@@ -175,9 +301,7 @@ function SingleProject() {
               />
             </div>
             <div>
-              <p>
-                Are you sure you want to delete {project.name}?
-              </p>
+              <p>Are you sure you want to delete {project.name}?</p>
               <div className="flex justify-between mt-4">
                 <button
                   onClick={() =>
@@ -355,7 +479,10 @@ function SingleProject() {
               <h2 className="text-2xl text-base-content uppercase font-bold ml-4 mr-3 max-w-75p">
                 {project.name}
               </h2>
-              <BsPencil className="max-w-8 w-full h-8 hover:cursor-pointer mr-7" />
+              <BsPencil
+                onClick={() => openUpdateModal()}
+                className="max-w-8 w-full h-8 hover:cursor-pointer mr-7"
+              />
             </div>
           </div>
           <div className="flex items-center mt-4">

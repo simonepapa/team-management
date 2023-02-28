@@ -12,7 +12,7 @@ const createProject = asyncHandler(async (req, res) => {
     throw new Error("Please add a name, a description, a due date and a team")
   }
 
-  const date = new Date(dueDate).toISOString().slice(0, 19).replace('T', ' ');
+  const date = new Date(dueDate).toISOString().slice(0, 19).replace("T", " ")
 
   // Check if the user making the request is the team leader
   const [isLeader] = await db.execute(
@@ -162,7 +162,9 @@ const updateProject = asyncHandler(async (req, res) => {
     const updatedValues = {
       ...(name && { name: name }),
       ...(status && { status: status }),
-      ...(dueDate && { dueDate: dueDate }),
+      ...(dueDate && {
+        dueDate: new Date(dueDate).toISOString().slice(0, 19).replace("T", " "),
+      }),
       ...(description && { description: description }),
     }
     const whereClause = {

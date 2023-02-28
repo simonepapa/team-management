@@ -218,7 +218,7 @@ function SingleTeam() {
       <Modal
         isOpen={updateModalIsOpen}
         onRequestClose={closeUpdateModal}
-        contentLabel="Create team"
+        contentLabel="Update team"
         className="w-11/12 md:w-9/12 xl:w-3/12 top-1/2 left-1/2 bottom-auto right-auto -translate-y-2/4 -translate-x-2/4 relative inset-y-1/2 rounded-lg bg-base-100 p-6 border border-base-100 overflow-y-auto max-h-75p"
         style={{
           overlay: { backgroundColor: "rgba(0,0,0,0.65)", zIndex: "50" },
