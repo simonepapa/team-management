@@ -70,7 +70,7 @@ const getProjects = asyncHandler(async (req, res) => {
 const getProject = asyncHandler(async (req, res) => {
   // Get project ID, name, description and dueDate but only if the user making the request is a member of the project
   const [project] = await db.execute(
-    `SELECT DISTINCT p.id, p.name, p.dueDate, p.description
+    `SELECT DISTINCT p.id, p.name, p.dueDate, p.description, p.status
       FROM projects p
     LEFT JOIN users_projects u
       ON p.id = u.projectId
@@ -96,7 +96,7 @@ const getProject = asyncHandler(async (req, res) => {
 
   // Get all project's members name and their role in the project
   const [users] = await db.execute(
-    `SELECT DISTINCT u.name, up.role
+    `SELECT DISTINCT u.id, u.email, u.name, up.role
       FROM users_projects up
     INNER JOIN users u
       ON u.id = up.userId

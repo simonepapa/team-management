@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { Link, useParams, useNavigate } from "react-router-dom"
 import Modal from "react-modal"
 import { toast } from "react-toastify"
-import { BsPlusCircle, BsPencil } from "react-icons/bs"
+import { BsPlusCircle, BsPencil, BsXLg } from "react-icons/bs"
 import Spinner from "../components/Spinner"
 import { AgGridReact } from "ag-grid-react"
 import "ag-grid-community/styles/ag-grid.css"
@@ -73,6 +73,21 @@ function SingleProject() {
     setAddMemberModalIsOpen(false)
   }
 
+  const toggleDrawer = () => {
+    setDrawerIsOpen((prevState) => !prevState)
+  }
+
+  const setupDrawer = (name, email, role) => {
+    setMemberData(() => ({
+      name: name,
+      email: email,
+      role: role,
+    }))
+    setConfirmRemove(false)
+
+    toggleDrawer()
+  }
+
   if (isLoading || isFetching) {
     return (
       <div className="fullscreen-spinner">
@@ -81,10 +96,77 @@ function SingleProject() {
     )
   }
 
-  console.log(projectObject)
-
   return (
     <>
+      <Drawer
+        open={drawerIsOpen}
+        onClose={toggleDrawer}
+        direction="right"
+        className="drawer"
+      >
+        <div className="bg-base-100 h-screen p-10">
+          <div className="flex justify-between">
+            <h2 className="text-2xl font-bold">{memberData.name}</h2>
+            <BsXLg className="hover:cursor-pointer" onClick={toggleDrawer} />
+          </div>
+          <div className="flex items-center mt-5">
+            <h3 className="text-normal font-bold">Email: </h3>
+            <p className="text-normal ml-1">{memberData.email}</p>
+          </div>
+          <div className="flex items-center mt-5">
+            <h3 className="text-normal font-bold mr-1">Role: </h3>
+            {leader[0].userId === user.id ? (
+              <form>
+                <select
+                  id="memberRole"
+                  name="memberRole"
+                  defaultValue={memberData.role}
+                  className="select select-ghost w-fit-content max-w-xs font-normal"
+                >
+                  <option value="Project leader">Project leader</option>
+                  <option value="Co-leader">Co-leader</option>
+                  <option value="Collaborator">Collaborator</option>
+                </select>
+                <button type="submit" className="btn btn-sm btn-outline">
+                  Save
+                </button>
+              </form>
+            ) : (
+              <p className="text-normal">{memberData.role}</p>
+            )}
+          </div>
+          {leader[0].userId === user.id && !confirmRemove && (
+            <button
+              onClick={() => setConfirmRemove(true)}
+              className="btn btn-outline mt-10"
+            >
+              Remove from project
+            </button>
+          )}
+          {leader[0].userId === user.id && confirmRemove && (
+            <div className="mt-4">
+              <p>
+                Are you sure you want to remove {memberData.name} from the project?
+              </p>
+              <div className="flex justify-between mt-4">
+                <form>
+                  <button type="submit" className="btn">
+                    Remove member
+                  </button>
+                </form>
+                <button
+                  type="button"
+                  onClick={() => setConfirmRemove(false)}
+                  className="btn"
+                >
+                  Go back
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </Drawer>
+
       <main className="container flex flex-wrap pb-4 pt-24">
         <div className="text-xl breadcrumbs pb-6 grow w-screen truncate w-screen">
           <ul>
@@ -132,7 +214,7 @@ function SingleProject() {
           </div>
           <div className="flex mt-4">
             <h3 className="text-xl font-bold mr-1">Team:</h3>
-            <p className="text-xl">{team.name && team.name}</p>
+            <p className="text-xl">{team[0].name}</p>
           </div>
           <div className="flex items-center mt-4">
             <h3 className="text-xl font-bold mr-1">Due date:</h3>
@@ -159,6 +241,16 @@ function SingleProject() {
                   <p className="text-normal font-bold">New member</p>
                 </div>
               </div>
+              {Object.keys(members).length !== 0 &&
+                members.map((member) => (
+                  <TeamMember
+                    onClick={() =>
+                      setupDrawer(member.name, member.email, member.role)
+                    }
+                    key={member.id}
+                    member={member}
+                  />
+                ))}
             </div>
           </div>
           <div className="flex flex-col mt-4">
