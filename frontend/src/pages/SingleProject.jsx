@@ -118,6 +118,21 @@ function SingleProject() {
     toggleDrawer()
   }
 
+  const onRoleUpdate = (e) => {
+    e.preventDefault()
+    const newRole = document.getElementById("memberRole")
+    updateMember({
+      projectId: params.projectId,
+      email: memberData.email,
+      role: newRole.value,
+    })
+      .unwrap()
+      .then(() => {
+        toggleDrawer()
+      })
+      .catch((error) => toast.error(error.data.message))
+  }
+
   const onRemove = (e) => {
     e.preventDefault()
     removeMember({
@@ -212,7 +227,7 @@ function SingleProject() {
           <div className="flex items-center mt-5">
             <h3 className="text-normal font-bold mr-1">Role: </h3>
             {leader[0].userId === user.id ? (
-              <form>
+              <form onSubmit={onRoleUpdate}>
                 <select
                   id="memberRole"
                   name="memberRole"
