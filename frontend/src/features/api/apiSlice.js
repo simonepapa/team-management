@@ -31,12 +31,17 @@ export const apiSlice = createApi({
         body: payload,
       }),
     }),
+    getUserTeamsLeader: builder.query({
+      query: () => `/users/teams`,
+      providesTags: ['Team'],
+    }),
     createTeam: builder.mutation({
       query: (payload) => ({
         url: "/teams",
         method: "POST",
         body: payload,
       }),
+      invalidatesTags: ['Team'],
     }),
     getTeams: builder.query({
       query: () => `/teams`,
@@ -106,6 +111,7 @@ export const apiSlice = createApi({
         method: "POST",
         body: payload,
       }),
+      invalidatesTags: ['Project'],
     }),
     getProjects: builder.query({
       query: () => `/projects`,
@@ -121,6 +127,7 @@ export const apiSlice = createApi({
 export const {
   useRegisterMutation,
   useLoginMutation,
+  useGetUserTeamsLeaderQuery,
   useCreateTeamMutation,
   useGetTeamsQuery,
   useGetTeamQuery,

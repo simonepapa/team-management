@@ -79,7 +79,23 @@ const generateToken = (id) => {
   })
 }
 
+// @desc    Get teams where the user is leader
+// @route   /api/users/teams
+// @access  Private
+const getUserTeamsLeader = asyncHandler(async (req, res) => {
+  const [teams] = await db.execute(
+    `SELECT DISTINCT ut.teamId as id, t.name
+      FROM users_teams ut
+    INNER JOIN teams t
+      ON ut.teamId = t.id
+    WHERE userId = ${req.user.id} AND role = 'Team leader'`
+  )
+
+  res.status(200).json(teams)
+})
+
 module.exports = {
   registerUser,
   loginUser,
+  getUserTeamsLeader
 }

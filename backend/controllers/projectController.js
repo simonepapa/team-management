@@ -12,6 +12,8 @@ const createProject = asyncHandler(async (req, res) => {
     throw new Error("Please add a name, a description, a due date and a team")
   }
 
+  const date = new Date(dueDate).toISOString().slice(0, 19).replace('T', ' ');
+
   // Check if the user making the request is the team leader
   const [isLeader] = await db.execute(
     `SELECT role FROM users_teams WHERE userId = ${req.user.id} AND teamId = ${team} AND role = 'Team leader'`
@@ -24,7 +26,7 @@ const createProject = asyncHandler(async (req, res) => {
 
   // Create project
   const [project] = await db.execute(
-    `INSERT INTO projects(name, description, status, dueDate) VALUES('${name}', '${description}', 'On track', '${dueDate}')`
+    `INSERT INTO projects(name, description, status, dueDate) VALUES('${name}', '${description}', 'On track', '${date}')`
   )
 
   // Create record in users_projects
@@ -218,7 +220,7 @@ const addMember = asyncHandler(async (req, res) => {
     res.status(201).json(userProject)
   }
 
-  res.status(400).json("Could not add the member to the project.")  
+  res.status(400).json("Could not add the member to the project.")
 })
 
 // @desc    Remove member from project

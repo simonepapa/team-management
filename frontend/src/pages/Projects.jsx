@@ -9,17 +9,18 @@ import Card from "../components/Card"
 import {
   useCreateProjectMutation,
   useGetProjectsQuery,
+  useGetUserTeamsLeaderQuery,
 } from "../features/api/apiSlice"
 
 Modal.setAppElement("#root")
 
 function Projects() {
   const [modalIsOpen, setModalIsOpen] = useState(false)
-  const [dueDate, setDueDate] = useState(new Date())
+  const [projectDueDate, setProjectDueDate] = useState(new Date())
   const [projectData, setProjectData] = useState({
-    name: "",
-    description: "",
-    team: "",
+    projectName: "",
+    projectDescription: "",
+    teamId: "",
   })
 
   const {
@@ -30,6 +31,12 @@ function Projects() {
     message,
   } = useGetProjectsQuery()
   const [createProject, { isCreating }] = useCreateProjectMutation()
+  const {
+    data: teams = [],
+    isLoadingTeams,
+    isErrorTeams,
+    messageTeams,
+  } = useGetUserTeamsLeaderQuery()
 
   const navigate = useNavigate()
 
@@ -37,7 +44,11 @@ function Projects() {
     if (isError) {
       toast.error(message)
     }
-  }, [isError, message])
+
+    if (isErrorTeams) {
+      toast.error(messageTeams)
+    }
+  }, [isError, message, isErrorTeams, messageTeams])
 
   const openModal = () => {
     setModalIsOpen(true)
@@ -47,9 +58,30 @@ function Projects() {
     setModalIsOpen(false)
   }
 
-  const onChange = (e) => {}
+  const onChange = (e) => {
+    // Update new project data on change
+    setProjectData((prevState) => ({
+      ...prevState,
+      [e.target.name]: e.target.value,
+    }))
+  }
 
-  const onSubmit = async (e) => {}
+  const onSubmit = async (e) => {
+    e.preventDefault()
+    createProject({
+      name: projectData.projectName,
+      description: projectData.projectDescription,
+      team: projectData.teamId,
+      dueDate: projectDueDate,
+    })
+      .unwrap()
+      .then((response) => {
+        console.log(response)
+        closeModal()
+        //navigate(`/projects/${response.id}`)
+      })
+      .catch((error) => toast.error(error.data.message))
+  }
 
   if (isLoading || isFetching) {
     return (
@@ -58,6 +90,8 @@ function Projects() {
       </div>
     )
   }
+
+  console.log(teams)
 
   return (
     <>
@@ -74,65 +108,78 @@ function Projects() {
           <h2 className="text-2xl font-bold">New project</h2>
           <BsXLg className="ml-8 hover:cursor-pointer" onClick={closeModal} />
         </div>
-        <div>
-          <form onSubmit={onSubmit} className="flex flex-col items-center mt-2">
-            <div className="flex flex-col w-screen max-w-xs">
-              <p className="text-normal mb-1">Project name</p>
-              <input
-                onChange={onChange}
-                required
-                id="name"
-                name="name"
-                type="text"
-                placeholder="Type project name here"
-                className="input input-bordered w-screen max-w-xs"
-              />
-            </div>
-            <div className="flex flex-col w-screen max-w-xs mt-3">
-              <p className="text-normal mb-1">Team name</p>
-              <select
-                onChange={onChange}
-                required
-                id="team"
-                name="team"
-                defaultValue={""}
-                className="select select-bordered font-normal w-fit-content"
-              >
-                <option disabled value="">
-                  Select the team
-                </option>
-              </select>
-            </div>
-            <div className="flex flex-col w-screen max-w-xs mt-3">
-              <p className="text-normal mb-1">Project description</p>
-              <textarea
-                onChange={onChange}
-                required
-                id="description"
-                name="description"
-                placeholder="Type project description here"
-                className="textarea textarea-bordered w-screen max-w-xs"
-              ></textarea>
-            </div>
-            <div className="flex flex-col w-screen max-w-xs mt-3">
-              <p className="text-normal mb-1">Due date</p>
-              <DatePicker
-                id="dueDate"
-                name="dueDate"
-                inputClass="input input-bordered w-screen max-w-xs"
-                value={""}
-                onChange={setDueDate}
-                placeholder="Select project due date here"
-              />
-            </div>
-            <div className="w-full flex justify-between mt-8">
-              <button className="btn">Create</button>
-              <button onClick={closeModal} className="btn">
-                Go back
-              </button>
-            </div>
-          </form>
-        </div>
+        {!isLoading && !isLoadingTeams ? (
+          <div>
+            <form
+              onSubmit={onSubmit}
+              className="flex flex-col items-center mt-2"
+            >
+              <div className="flex flex-col w-screen max-w-xs">
+                <p className="text-normal mb-1">Project name</p>
+                <input
+                  onChange={onChange}
+                  required
+                  id="projectName"
+                  name="projectName"
+                  type="text"
+                  placeholder="Type project name here"
+                  className="input input-bordered w-screen max-w-xs"
+                />
+              </div>
+              <div className="flex flex-col w-screen max-w-xs mt-3">
+                <p className="text-normal mb-1">Team name</p>
+                <select
+                  onChange={onChange}
+                  required
+                  id="teamId"
+                  name="teamId"
+                  defaultValue={""}
+                  className="select select-bordered font-normal w-fit-content"
+                >
+                  <option disabled value="">
+                    Select the team
+                  </option>
+                  {Object.keys(teams).length !== 0 &&
+                    teams.map((team) => (
+                      <option key={team.id} value={team.id}>
+                        {team.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              <div className="flex flex-col w-screen max-w-xs mt-3">
+                <p className="text-normal mb-1">Project description</p>
+                <textarea
+                  onChange={onChange}
+                  required
+                  id="projectDescription"
+                  name="projectDescription"
+                  placeholder="Type project description here"
+                  className="textarea textarea-bordered w-screen max-w-xs"
+                ></textarea>
+              </div>
+              <div className="flex flex-col w-screen max-w-xs mt-3">
+                <p className="text-normal mb-1">Due date</p>
+                <DatePicker
+                  id="projectDueDate"
+                  name="projectDueDate"
+                  inputClass="input input-bordered w-screen max-w-xs"
+                  value={""}
+                  onChange={setProjectDueDate}
+                  placeholder="Select project due date here"
+                />
+              </div>
+              <div className="w-full flex justify-between mt-8">
+                <button className="btn">Create</button>
+                <button onClick={closeModal} className="btn">
+                  Go back
+                </button>
+              </div>
+            </form>
+          </div>
+        ) : (
+          <Spinner />
+        )}
       </Modal>
       <main className="container flex flex-wrap pb-4 pt-24">
         <div className="text-xl breadcrumbs pb-6 grow w-screen truncate w-screen">
