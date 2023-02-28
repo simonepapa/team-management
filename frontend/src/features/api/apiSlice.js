@@ -15,7 +15,7 @@ export const apiSlice = createApi({
       return headers
     },
   }),
-  tagTypes: ['Team'],
+  tagTypes: ['Team', 'Project'],
   endpoints: (builder) => ({
     register: builder.mutation({
       query: (payload) => ({
@@ -100,6 +100,21 @@ export const apiSlice = createApi({
       },
       invalidatesTags: ['Team'],
     }),
+    createProject: builder.mutation({
+      query: (payload) => ({
+        url: "/projects",
+        method: "POST",
+        body: payload,
+      }),
+    }),
+    getProjects: builder.query({
+      query: () => `/projects`,
+      providesTags: ['Project'],
+    }),
+    getProject: builder.query({
+      query: (projectId) => `/projects/${projectId}`,
+      providesTags: ['Project'],
+    }),
   }),
 })
 
@@ -113,5 +128,8 @@ export const {
   useDeleteTeamMutation,
   useAddTeamMemberMutation,
   useUpdateTeamMemberMutation,
-  useRemoveTeamMemberMutation
+  useRemoveTeamMemberMutation,
+  useCreateProjectMutation,
+  useGetProjectsQuery,
+  useGetProjectQuery,
 } = apiSlice
