@@ -10,6 +10,7 @@ import Teams from "./pages/Teams"
 import SingleTeam from "./pages/SingleTeam"
 import Projects from "./pages/Projects"
 import SingleProject from "./pages/SingleProject"
+import Tasks from "./pages/Tasks"
 
 function App() {
   return (
@@ -32,6 +33,9 @@ function App() {
             </Route>
             <Route path="/projects/:projectId" element={<PrivateRoute />}>
               <Route path="/projects/:projectId" element={<SingleProject />} />
+            </Route>
+            <Route path="/tasks" element={<PrivateRoute />}>
+              <Route path="/tasks" element={<Tasks />} />
             </Route>
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
