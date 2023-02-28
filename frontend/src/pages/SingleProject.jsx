@@ -10,7 +10,14 @@ import "ag-grid-community/styles/ag-theme-alpine.css"
 import Drawer from "react-modern-drawer"
 import "react-modern-drawer/dist/index.css"
 import TeamMember from "../components/TeamMember"
-import { useGetProjectQuery } from "../features/api/apiSlice"
+import {
+  useGetProjectQuery,
+  useUpdateProjectMutation,
+  useDeleteProjectMutation,
+  useAddProjectMemberMutation,
+  useUpdateProjectMemberMutation,
+  useRemoveProjectMemberMutation,
+} from "../features/api/apiSlice"
 
 Modal.setAppElement("#root")
 
@@ -40,6 +47,11 @@ function SingleProject() {
     isError,
     message,
   } = useGetProjectQuery(params.projectId)
+  const [updateProject, { isUpdatingProject }] = useUpdateProjectMutation()
+  const [deleteProject, { isDeleting }] = useDeleteProjectMutation()
+  const [addMember, { isAdding }] = useAddProjectMemberMutation()
+  const [updateMember] = useUpdateProjectMemberMutation()
+  const [removeMember] = useRemoveProjectMemberMutation()
 
   const { project, users: members, team, leader } = projectObject
 
@@ -73,6 +85,24 @@ function SingleProject() {
     setAddMemberModalIsOpen(false)
   }
 
+  const onAddMemberChange = (e) => {
+    setEmail((prevState) => ({
+      ...prevState,
+      [e.target.name]: e.target.value,
+    }))
+  }
+
+  // Add member
+  const onAddMember = (e) => {
+    e.preventDefault()
+    addMember({ projectId: params.projectId, email: email.memberEmail })
+      .unwrap()
+      .then(() => {
+        closeAddMemberModal()
+      })
+      .catch((error) => toast.error(error.data.message))
+  }
+
   const toggleDrawer = () => {
     setDrawerIsOpen((prevState) => !prevState)
   }
@@ -98,6 +128,59 @@ function SingleProject() {
 
   return (
     <>
+      <Modal
+        isOpen={addMemberModalIsOpen}
+        onRequestClose={closeAddMemberModal}
+        contentLabel="Add member"
+        className="w-11/12 md:w-fit top-1/2 left-1/2 bottom-auto right-auto -translate-y-2/4 -translate-x-2/4 relative inset-y-1/2 rounded-lg bg-base-100 p-6 border border-base-100 overflow-y-auto max-h-75p"
+        style={{
+          overlay: { backgroundColor: "rgba(0,0,0,0.65)", zIndex: "50" },
+        }}
+      >
+        <div className="flex justify-between">
+          <h2 className="text-2xl font-bold">New member</h2>
+          <BsXLg
+            className="ml-8 hover:cursor-pointer"
+            onClick={closeAddMemberModal}
+          />
+        </div>
+        {!isAdding ? (
+          <div>
+            <form
+              onSubmit={onAddMember}
+              className="flex flex-col items-center mt-2"
+            >
+              <div className="flex flex-col w-screen max-w-xs">
+                <p className="text-normal mb-1">Email</p>
+                <input
+                  onChange={onAddMemberChange}
+                  required
+                  id="memberEmail"
+                  name="memberEmail"
+                  type="email"
+                  placeholder="Type member email here"
+                  className="input input-bordered w-screen max-w-xs"
+                />
+              </div>
+              <div className="w-full flex justify-between mt-8">
+                <button type="submit" className="btn">
+                  Add
+                </button>
+                <button
+                  type="button"
+                  onClick={closeAddMemberModal}
+                  className="btn"
+                >
+                  Go back
+                </button>
+              </div>
+            </form>
+          </div>
+        ) : (
+          <Spinner />
+        )}
+      </Modal>
+
       <Drawer
         open={drawerIsOpen}
         onClose={toggleDrawer}
