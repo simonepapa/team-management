@@ -71,11 +71,10 @@ const getProject = asyncHandler(async (req, res) => {
   // Get project ID, name, description and dueDate but only if the user making the request is a member of the project
   const [project] = await db.execute(
     `SELECT DISTINCT p.id, p.name, p.dueDate, p.description
-    FROM projects p
+      FROM projects p
     LEFT JOIN users_projects u
-    ON p.id = u.projectId
-    WHERE p.id = ${req.params.id} AND u.userId = ${req.user.id}
-    ORDER BY FIELD(role,'Project leader','Co-leader','Collaborator')`
+      ON p.id = u.projectId
+    WHERE p.id = ${req.params.id} AND u.userId = ${req.user.id}`
   )
 
   // If the project doesn't exist OR if the user making the request is not a member of the project
@@ -101,11 +100,17 @@ const getProject = asyncHandler(async (req, res) => {
       FROM users_projects up
     INNER JOIN users u
       ON u.id = up.userId
-    WHERE up.projectId = ${req.params.id}`
+    WHERE up.projectId = ${req.params.id}
+    ORDER BY FIELD(role,'Project leader','Co-leader','Collaborator')`
+  )
+
+  // Get project leader
+  const [leader] = await db.execute(
+    `SELECT DISTINCT userId FROM users_projects WHERE role = 'Project leader' AND projectId = ${req.params.id}`
   )
 
   // Return an object that contains both the project info, team name and the users list
-  res.status(200).json({ project: project[0], team, users })
+  res.status(200).json({ project: project[0], team, users, leader })
 })
 
 // @desc    Delete project
