@@ -8,6 +8,7 @@ import Register from "./pages/Register"
 import Home from "./pages/Home"
 import Teams from "./pages/Teams"
 import SingleTeam from "./pages/SingleTeam"
+import Projects from "./pages/Projects"
 
 function App() {
   return (
@@ -24,6 +25,9 @@ function App() {
             </Route>
             <Route path="/teams/:teamId" element={<PrivateRoute />}>
               <Route path="/teams/:teamId" element={<SingleTeam />} />
+            </Route>
+            <Route path="/projects" element={<PrivateRoute />}>
+              <Route path="/projects" element={<Projects />} />
             </Route>
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />

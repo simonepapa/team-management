@@ -127,7 +127,7 @@ function Teams() {
           style={{ width: "90vw" }}
         >
           <h2 className="text-2xl text-base-content uppercase font-bold mb-6">
-            My Team
+            My Teams
           </h2>
           <div
             onClick={openModal}
