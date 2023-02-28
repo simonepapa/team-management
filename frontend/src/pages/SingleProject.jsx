@@ -157,6 +157,54 @@ function SingleProject() {
   return (
     <>
       <Modal
+        isOpen={deleteModalIsOpen}
+        onRequestClose={closeDeleteModal}
+        contentLabel={`Delete project`}
+        className="w-11/12 md:w-9/12 xl:w-3/12 top-1/2 left-1/2 bottom-auto right-auto -translate-y-2/4 -translate-x-2/4 relative inset-y-1/2 rounded-lg bg-base-100 p-6 border border-base-100 overflow-y-auto max-h-75p"
+        style={{
+          overlay: { backgroundColor: "rgba(0,0,0,0.65)", zIndex: "50" },
+        }}
+      >
+        {!isDeleting ? (
+          <>
+            <div className="flex justify-between">
+              <h2 className="text-2xl font-bold">Delete {project.name}</h2>
+              <BsXLg
+                className="ml-8 hover:cursor-pointer"
+                onClick={closeDeleteModal}
+              />
+            </div>
+            <div>
+              <p>
+                Are you sure you want to delete {project.name}?
+              </p>
+              <div className="flex justify-between mt-4">
+                <button
+                  onClick={() =>
+                    deleteProject({ projectId: params.projectId })
+                      .unwrap()
+                      .then(() => {
+                        closeDeleteModal()
+                        navigate("/projects")
+                      })
+                      .catch((error) => toast.error(error.data.message))
+                  }
+                  className="btn"
+                >
+                  Delete
+                </button>
+                <button onClick={closeDeleteModal} className="btn">
+                  Go back
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <Spinner />
+        )}
+      </Modal>
+
+      <Modal
         isOpen={addMemberModalIsOpen}
         onRequestClose={closeAddMemberModal}
         contentLabel="Add member"
@@ -376,6 +424,11 @@ function SingleProject() {
           <div className="flex flex-col mt-4">
             <h3 className="text-xl font-bold mb-4">Tasks</h3>
           </div>
+          {leader[0].userId === user.id && (
+            <button onClick={openDeleteModal} className="btn btn-outline mt-10">
+              Delete project
+            </button>
+          )}
         </section>
       </main>
     </>
