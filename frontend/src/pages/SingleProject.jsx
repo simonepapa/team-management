@@ -146,7 +146,8 @@ function SingleProject() {
           {leader[0].userId === user.id && confirmRemove && (
             <div className="mt-4">
               <p>
-                Are you sure you want to remove {memberData.name} from the project?
+                Are you sure you want to remove {memberData.name} from the
+                project?
               </p>
               <div className="flex justify-between mt-4">
                 <form>

@@ -121,6 +121,60 @@ export const apiSlice = createApi({
       query: (projectId) => `/projects/${projectId}`,
       providesTags: ['Project'],
     }),
+    updateProject: builder.mutation({
+      query: (data) => {
+        const { projectId, ...body } = data
+        return {
+          url: `/projects/${projectId}`,
+          method: "PUT",
+          body,
+        }
+      },
+      invalidatesTags: ['Project']
+    }),
+    deleteProject: builder.mutation({
+      query: (data) => {
+        const { projectId } = data
+        return {
+          url: `/projects/${projectId}`,
+          method: "DELETE",
+        }
+      },
+      invalidatesTags: ['Project'],
+    }),
+    addProjectMember: builder.mutation({
+      query: (data) => {
+        const { projectId, ...body } = data
+        return {
+          url: `/projects/${projectId}/members`,
+          method: "POST",
+          body
+        }
+      },
+      invalidatesTags: ['Project'],
+    }),
+    updateProjectMember: builder.mutation({
+      query: (data) => {
+        const { projectId, ...body } = data
+        return {
+          url: `/projects/${projectId}/members`,
+          method: "PUT",
+          body
+        }
+      },
+      invalidatesTags: ['Project'],
+    }),
+    removeProjectMember: builder.mutation({
+      query: (data) => {
+        const { projectId, ...body } = data
+        return {
+          url: `/projects/${projectId}/members`,
+          method: "DELETE",
+          body
+        }
+      },
+      invalidatesTags: ['Project'],
+    }),
   }),
 })
 
@@ -139,4 +193,9 @@ export const {
   useCreateProjectMutation,
   useGetProjectsQuery,
   useGetProjectQuery,
+  useUpdateProjectMutation,
+  useDeleteProjectMutation,
+  useAddProjectMemberMutation,
+  useUpdateProjectMemberMutation,
+  useRemoveProjectMemberMutation,
 } = apiSlice
