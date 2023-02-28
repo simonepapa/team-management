@@ -74,7 +74,8 @@ const getProject = asyncHandler(async (req, res) => {
     FROM projects p
     LEFT JOIN users_projects u
     ON p.id = u.projectId
-    WHERE p.id = ${req.params.id} AND u.userId = ${req.user.id}`
+    WHERE p.id = ${req.params.id} AND u.userId = ${req.user.id}
+    ORDER BY FIELD(role,'Project leader','Co-leader','Collaborator')`
   )
 
   // If the project doesn't exist OR if the user making the request is not a member of the project

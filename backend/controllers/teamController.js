@@ -72,7 +72,8 @@ const getTeam = asyncHandler(async (req, res) => {
       FROM users_teams ut
     INNER JOIN users u
       ON u.id = ut.userId
-    WHERE ut.teamId = ${req.params.id}`
+    WHERE ut.teamId = ${req.params.id}
+    ORDER BY FIELD(role,'Team leader','Co-leader','Collaborator')`
   )
 
   // Get all team's projects name, description, status and dueDate
