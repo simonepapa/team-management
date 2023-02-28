@@ -82,7 +82,29 @@ function Tasks() {
     }
   }, [isLoadingUncompleted, isFetchingUncompleted, uncompletedTasks])
 
-  console.log(uncompletedTasks)
+  useEffect(() => {
+    if (!isLoadingCompleted && !isFetchingCompleted) {
+      if (completedRowData.length === 0) {
+        completedTasks.map((task) => {
+          setCompletedRowData((current) => [
+            ...current,
+            {
+              id: task.id,
+              name: task.name,
+              priority: task.priority,
+              dueDate: new Date(task.dueDate).toLocaleDateString("en-EN", {
+                day: "numeric",
+                month: "short",
+              }),
+              project: task.project,
+            },
+          ])
+        })
+      } else {
+        setCompletedRowData([])
+      }
+    }
+  }, [isLoadingCompleted, isFetchingCompleted, completedTasks])
 
   return (
     <>
@@ -99,19 +121,23 @@ function Tasks() {
         </div>
         <section className="shadow-common h-fit bg-base-100 rounded-lg px-6 pt-6 pb-2 mb-6 z-0 w-screen overflow-x-scroll xl:overflow-x-auto xl:w-45vw">
           <h2 className="text-2xl text-base-content font-bold mb-6">TO DO</h2>
-          <div
-            className="ag-theme-alpine-dark project-table"
-            style={{ height: 400 }}
-          >
-            <AgGridReact
-              ref={gridRef}
-              defaultColDef={defaultColDef}
-              rowData={uncompletedRowData}
-              columnDefs={taskColumns}
-              pagination={true}
-              paginationPageSize={10}
-            ></AgGridReact>
-          </div>
+          {!isLoadingUncompleted && !isFetchingUncompleted ? (
+            <div
+              className="ag-theme-alpine-dark project-table"
+              style={{ height: 400 }}
+            >
+              <AgGridReact
+                ref={gridRef}
+                defaultColDef={defaultColDef}
+                rowData={uncompletedRowData}
+                columnDefs={taskColumns}
+                pagination={true}
+                paginationPageSize={10}
+              ></AgGridReact>
+            </div>
+          ) : (
+            <Spinner />
+          )}
           <div className="flex flex-wrap items-center mt-4 py-2">
             <div className="flex">
               <BsPlusCircle className="mr-3 w-6 h-auto hover:cursor-pointer hover:fill-info" />
@@ -122,19 +148,23 @@ function Tasks() {
           <h2 className="text-2xl text-base-content font-bold mb-6">
             COMPLETED
           </h2>
-          <div
-            className="ag-theme-alpine-dark project-table"
-            style={{ height: 400 }}
-          >
-            <AgGridReact
-              ref={gridRef}
-              defaultColDef={defaultColDef}
-              rowData={completedRowData}
-              columnDefs={taskColumns}
-              pagination={true}
-              paginationPageSize={10}
-            ></AgGridReact>
-          </div>
+          {!isLoadingCompleted && !isFetchingCompleted ? (
+            <div
+              className="ag-theme-alpine-dark project-table"
+              style={{ height: 400 }}
+            >
+              <AgGridReact
+                ref={gridRef}
+                defaultColDef={defaultColDef}
+                rowData={completedRowData}
+                columnDefs={taskColumns}
+                pagination={true}
+                paginationPageSize={10}
+              ></AgGridReact>
+            </div>
+          ) : (
+            <Spinner />
+          )}
         </section>
       </main>
     </>

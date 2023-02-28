@@ -112,33 +112,20 @@ const getTasks = asyncHandler(async (req, res) => {
 // @route   GET /api/tasks/completed
 // @access  Private
 const getCompleted = asyncHandler(async (req, res) => {
-  const { completedPage } = req.query
-  const offset =
-    completedPage === "1" ||
-    completedPage === "0" ||
-    completedPage === undefined
-      ? 0
-      : (completedPage - 1) * 10
-
   const [tasks] = await db.execute(`
-    SELECT DISTINCT t.id, t.name, t.priority, t.status, t.dueDate, t.isSubtask, t.mainTask, t.createdAt, t.updatedAt, t.completedAt
-    FROM tasks t 
+    SELECT DISTINCT t.id, t.name, t.priority, t.status, t.dueDate, t.isSubtask, t.mainTask, t.createdAt, t.updatedAt, t.completedAt, p.name as project
+      FROM tasks t 
     INNER JOIN users_tasks ut
-    ON t.id = ut.taskId
+      ON t.id = ut.taskId
+    INNER JOIN projects_tasks pt
+      ON t.id = pt.taskId
+    INNER JOIN projects p
+      ON pt.projectId = p.id
     WHERE ut.userId = ${req.user.id} AND t.status = "Completed" AND t.isSubtask = false
-    ORDER BY t.dueDate
-    LIMIT 10
-    OFFSET ${offset};
+    ORDER BY t.dueDate;
   `)
 
-  const [total] = await db.execute(`
-    SELECT COUNT(*) FROM tasks t 
-    INNER JOIN users_tasks ut
-    ON t.id = ut.taskId
-    WHERE ut.userId = ${req.user.id} AND t.status = "Completed" AND t.isSubtask = false;
-  `)
-
-  res.status(200).json({ total: total[0]["COUNT(*)"], tasks: tasks })
+  res.status(200).json(tasks)
 })
 
 // @desc    Get completed tasks
