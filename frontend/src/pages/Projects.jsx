@@ -7,8 +7,8 @@ import Modal from "react-modal"
 import Spinner from "../components/Spinner"
 import Card from "../components/Card"
 import {
-  useCreateTeamMutation,
-  useGetTeamsQuery,
+  useCreateProjectMutation,
+  useGetProjectsQuery,
 } from "../features/api/apiSlice"
 
 Modal.setAppElement("#root")
@@ -22,7 +22,22 @@ function Projects() {
     team: "",
   })
 
+  const {
+    data: projects = [],
+    isLoading,
+    isFetching,
+    isError,
+    message,
+  } = useGetProjectsQuery()
+  const [createProject, { isCreating }] = useCreateProjectMutation()
+
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (isError) {
+      toast.error(message)
+    }
+  }, [isError, message])
 
   const openModal = () => {
     setModalIsOpen(true)
@@ -35,6 +50,14 @@ function Projects() {
   const onChange = (e) => {}
 
   const onSubmit = async (e) => {}
+
+  if (isLoading || isFetching) {
+    return (
+      <div className="fullscreen-spinner">
+        <Spinner />
+      </div>
+    )
+  }
 
   return (
     <>
@@ -78,7 +101,6 @@ function Projects() {
                 <option disabled value="">
                   Select the team
                 </option>
-                
               </select>
             </div>
             <div className="flex flex-col w-screen max-w-xs mt-3">
@@ -139,7 +161,28 @@ function Projects() {
             </div>
             <p className="text-lg text-base-content">Create new</p>
           </div>
-          <div className="flex flex-wrap"></div>
+          <div className="flex flex-wrap">
+            {isLoading || isFetching ? (
+              <Spinner />
+            ) : (
+              <>
+                {projects.map((project) => (
+                  <Link
+                    key={project && project.id}
+                    to={`/projects/${project.id}`}
+                    title={project.name}
+                  >
+                    <Card
+                      image="https://picsum.photos/200/300"
+                      title={project.name && project.name}
+                      teammates={project.members}
+                      label={project.status}
+                    />
+                  </Link>
+                ))}
+              </>
+            )}
+          </div>
         </section>
       </main>
     </>

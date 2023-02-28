@@ -139,7 +139,7 @@ function Teams() {
             <p className="text-lg text-base-content">Create new</p>
           </div>
           <div className="flex flex-wrap">
-            {isLoading ? (
+            {isLoading || isFetching ? (
               <Spinner />
             ) : (
               <>
