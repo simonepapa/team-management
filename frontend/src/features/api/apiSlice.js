@@ -15,7 +15,7 @@ export const apiSlice = createApi({
       return headers
     },
   }),
-  tagTypes: ['Team', 'Project'],
+  tagTypes: ['Team', 'Project', 'Completed', 'Uncompleted'],
   endpoints: (builder) => ({
     register: builder.mutation({
       query: (payload) => ({
@@ -179,6 +179,14 @@ export const apiSlice = createApi({
       query: (userId) => `/users/${userId}/projects`,
       providesTags: ['Project'],
     }),
+    getCompletedTasks: builder.query({
+      query: () => `/tasks/completed`,
+      providesTags: ['Completed'],
+    }),
+    getUncompletedTasks: builder.query({
+      query: () => `/tasks/uncompleted`,
+      providesTags: ['Uncompleted'],
+    }),
   }),
 })
 
@@ -202,5 +210,7 @@ export const {
   useAddProjectMemberMutation,
   useUpdateProjectMemberMutation,
   useRemoveProjectMemberMutation,
-  useGetUserProjectsQuery
+  useGetUserProjectsQuery,
+  useGetCompletedTasksQuery,
+  useGetUncompletedTasksQuery,
 } = apiSlice

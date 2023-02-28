@@ -7,6 +7,10 @@ import "ag-grid-community/styles/ag-grid.css"
 import "ag-grid-community/styles/ag-theme-alpine.css"
 import Drawer from "react-modern-drawer"
 import "react-modern-drawer/dist/index.css"
+import {
+  useGetCompletedTasksQuery,
+  useGetUncompletedTasksQuery
+} from "../features/api/apiSlice"
 
 function Tasks() {
   return (
